@@ -8,125 +8,131 @@
     'use strict';
 
     // === CONFIG ===
-    // Change this to your own secret topic name (keep it private!)
     const NTFY_TOPIC = 'mychat-batoot-mz2024';
-    const NTFY_URL = `https://ntfy.sh/${NTFY_TOPIC}`;
-
-    // Don't track if running on localhost (developer mode)
-    const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-    if (isLocal) return;
+    const NTFY_URL = 'https://ntfy.sh';
 
     // Track visit start time
     const visitStart = Date.now();
-    let pageViews = ['الصفحة الرئيسية'];
+    let pageViews = [];
+    let exitSent = false;
 
     // Detect device info
     function getDeviceInfo() {
         const ua = navigator.userAgent;
-        let device = 'متصفح غير معروف';
-        if (/iPhone|iPad/.test(ua)) device = '📱 آيفون';
-        else if (/Android/.test(ua)) device = '📱 أندرويد';
-        else if (/Windows/.test(ua)) device = '💻 ويندوز';
-        else if (/Mac/.test(ua)) device = '💻 ماك';
-        return device;
+        if (/iPhone|iPad/.test(ua)) return 'iPhone/iPad';
+        if (/Android/.test(ua)) return 'Android';
+        if (/Windows/.test(ua)) return 'Windows PC';
+        if (/Mac/.test(ua)) return 'Mac';
+        return 'Unknown';
     }
 
     // Format duration
     function formatDuration(ms) {
         const seconds = Math.floor(ms / 1000);
-        if (seconds < 60) return `${seconds} ثانية`;
+        if (seconds < 60) return seconds + ' sec';
         const minutes = Math.floor(seconds / 60);
         const remainSec = seconds % 60;
-        if (minutes < 60) return `${minutes} دقيقة و ${remainSec} ثانية`;
+        if (minutes < 60) return minutes + 'm ' + remainSec + 's';
         const hours = Math.floor(minutes / 60);
         const remainMin = minutes % 60;
-        return `${hours} ساعة و ${remainMin} دقيقة`;
+        return hours + 'h ' + remainMin + 'm';
     }
 
-    // Get current time in Arabic
-    function getArabicTime() {
-        return new Date().toLocaleString('ar-EG', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-
-    // Send notification
-    function sendNotification(title, message, priority = 3) {
+    // Send notification using JSON (handles Unicode properly)
+    function sendNotification(title, message, tags, priority) {
         try {
             fetch(NTFY_URL, {
                 method: 'POST',
-                headers: {
-                    'Title': title,
-                    'Priority': priority.toString(),
-                    'Tags': 'heart,eyes'
-                },
-                body: message
-            }).catch(() => { /* silent fail */ });
-        } catch (e) { /* silent fail */ }
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    topic: NTFY_TOPIC,
+                    title: title,
+                    message: message,
+                    tags: tags || ['heart'],
+                    priority: priority || 3
+                })
+            }).catch(function() {});
+        } catch (e) {}
     }
 
     // === VISIT START ===
+    var now = new Date();
+    var timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+    var dateStr = now.getDate() + '/' + (now.getMonth() + 1) + '/' + now.getFullYear();
+
     sendNotification(
-        '💕 حد فتح الموقع!',
-        `🕐 الوقت: ${getArabicTime()}\n${getDeviceInfo()}`,
+        'Someone opened the site!',
+        'Time: ' + dateStr + ' ' + timeStr + '\nDevice: ' + getDeviceInfo() + '\nURL: ' + location.href,
+        ['eyes', 'heart'],
         4
     );
 
     // === TRACK PAGE NAVIGATION ===
-    // Listen for page changes (our SPA uses class toggling)
-    const pageNames = {
-        'dedication': '💌 صفحة الإهداء',
-        'welcome': '🏠 صفحة الترحيب',
-        'chat': '💬 المحادثة',
-        'favorites': '❤️ المفضلة',
-        'stats': '📊 الإحصائيات',
-        'onthisday': '🗓️ ذكريات اليوم',
-        'timeline': '📅 الخط الزمني'
+    var pageNames = {
+        'dedication': 'Dedication',
+        'welcome': 'Welcome',
+        'chat': 'Chat',
+        'favorites': 'Favorites',
+        'stats': 'Stats',
+        'onthisday': 'Memories',
+        'timeline': 'Timeline'
     };
 
-    const observer = new MutationObserver(() => {
-        const activePage = document.querySelector('.page.active');
+    var observer = new MutationObserver(function() {
+        var activePage = document.querySelector('.page.active');
         if (activePage) {
-            const pageId = activePage.id.replace('page-', '');
-            const pageName = pageNames[pageId] || pageId;
-            if (pageViews[pageViews.length - 1] !== pageName) {
+            var pageId = activePage.id.replace('page-', '');
+            var pageName = pageNames[pageId] || pageId;
+            if (pageViews.length === 0 || pageViews[pageViews.length - 1] !== pageName) {
                 pageViews.push(pageName);
             }
         }
     });
 
-    // Start observing after DOM is ready
-    document.addEventListener('DOMContentLoaded', () => {
-        const pages = document.querySelectorAll('.page');
-        pages.forEach(page => {
+    document.addEventListener('DOMContentLoaded', function() {
+        var pages = document.querySelectorAll('.page');
+        pages.forEach(function(page) {
             observer.observe(page, { attributes: true, attributeFilter: ['class'] });
         });
     });
 
     // === VISIT END ===
     function onVisitEnd() {
-        const duration = Date.now() - visitStart;
-        const durationText = formatDuration(duration);
-        const pagesVisited = [...new Set(pageViews)].join(' ← ');
+        if (exitSent) return;
+        exitSent = true;
 
-        sendNotification(
-            '👋 الزائر طلع من الموقع',
-            `⏱️ مدة الزيارة: ${durationText}\n📄 الصفحات: ${pagesVisited}\n${getDeviceInfo()}`,
-            3
-        );
+        var duration = Date.now() - visitStart;
+        var durationText = formatDuration(duration);
+        var pagesText = pageViews.length > 0 ? pageViews.join(' > ') : 'None';
+
+        // Use sendBeacon for reliability on page close
+        var payload = JSON.stringify({
+            topic: NTFY_TOPIC,
+            title: 'Visitor left the site',
+            message: 'Duration: ' + durationText + '\nPages: ' + pagesText + '\nDevice: ' + getDeviceInfo(),
+            tags: ['wave'],
+            priority: 3
+        });
+
+        if (navigator.sendBeacon) {
+            var blob = new Blob([payload], { type: 'application/json' });
+            navigator.sendBeacon(NTFY_URL, blob);
+        } else {
+            fetch(NTFY_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: payload,
+                keepalive: true
+            }).catch(function() {});
+        }
     }
 
-    // Use multiple events to ensure we catch the exit
-    window.addEventListener('beforeunload', onVisitEnd);
-    document.addEventListener('visibilitychange', () => {
+    window.addEventListener('pagehide', onVisitEnd);
+    document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'hidden') {
             onVisitEnd();
         }
     });
+    window.addEventListener('beforeunload', onVisitEnd);
 
 })();
