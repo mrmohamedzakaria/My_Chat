@@ -43,13 +43,47 @@
 
     // ===== Initialization =====
     function init() {
-        runIntro();
         createStars();
         createFloatingHearts();
         setupNavigation();
         setupBookmark();
         setupThemePicker();
-        loadChat();
+        setupLockScreen();
+        setupRandomMemory();
+    }
+
+    // ===== Lock Screen =====
+    function setupLockScreen() {
+        const PASSWORD = '1997';
+        const lockScreen = $('lock-screen');
+        const lockInput = $('lock-input');
+        const lockBtn = $('lock-btn');
+        const lockError = $('lock-error');
+
+        function tryUnlock() {
+            if (lockInput.value === PASSWORD) {
+                lockError.classList.add('hidden');
+                lockScreen.classList.add('unlocked');
+                setTimeout(() => {
+                    lockScreen.classList.add('hidden');
+                    runIntro();
+                    loadChat();
+                }, 800);
+            } else {
+                lockError.classList.remove('hidden');
+                lockInput.classList.add('shake');
+                lockInput.value = '';
+                setTimeout(() => lockInput.classList.remove('shake'), 400);
+            }
+        }
+
+        lockBtn.addEventListener('click', tryUnlock);
+        lockInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') tryUnlock();
+        });
+
+        // Auto-focus
+        setTimeout(() => lockInput.focus(), 500);
     }
 
     // ===== Cinematic Intro =====
@@ -261,6 +295,108 @@
                 <span class="stat-preview-label">كلمة</span>
             </div>
         `;
+
+        // Render love counter
+        renderLoveCounter();
+
+        // Render first message
+        renderFirstMessage();
+    }
+
+    // ===== Love Counter =====
+    function renderLoveCounter() {
+        if (!chatData || chatData.messages.length === 0) return;
+        const container = $('love-counter');
+
+        // Get first message date
+        const firstMsg = chatData.messages[0];
+        let firstDate;
+        try { firstDate = ChatParser.parseDate(firstMsg.date); }
+        catch (e) { return; }
+
+        const now = new Date();
+        let years = now.getFullYear() - firstDate.getFullYear();
+        let months = now.getMonth() - firstDate.getMonth();
+        let days = now.getDate() - firstDate.getDate();
+
+        if (days < 0) { months--; days += 30; }
+        if (months < 0) { years--; months += 12; }
+
+        let parts = [];
+        if (years > 0) parts.push(`<span>${years}</span> سنة`);
+        if (months > 0) parts.push(`<span>${months}</span> شهر`);
+        if (days > 0) parts.push(`<span>${days}</span> يوم`);
+
+        container.innerHTML = `
+            <div class="love-counter-label">💕 معاً منذ</div>
+            <div class="love-counter-value">${parts.join(' و ')}</div>
+        `;
+    }
+
+    // ===== First Message =====
+    function renderFirstMessage() {
+        if (!chatData || chatData.messages.length === 0) return;
+        const container = $('first-message-box');
+
+        // Find first non-system message
+        const firstMsg = chatData.messages.find(m => !m.isSystem && m.text.trim().length > 0);
+        if (!firstMsg) return;
+
+        container.innerHTML = `
+            <div class="first-msg-label">💬 أول رسالة بينكم</div>
+            <div class="first-msg-text">"${escapeHtml(firstMsg.text)}"</div>
+            <div class="first-msg-meta">${escapeHtml(firstMsg.sender)} — ${formatDateArabic(firstMsg.date)} ${firstMsg.time}</div>
+        `;
+    }
+
+    // ===== Random Memory =====
+    function setupRandomMemory() {
+        $('btn-random-memory').addEventListener('click', showRandomMemory);
+    }
+
+    function showRandomMemory() {
+        if (!chatData || chatData.messages.length === 0) return;
+
+        // Filter non-system messages with actual text
+        const validMessages = chatData.messages.filter(m => !m.isSystem && m.text.trim().length > 3);
+        if (validMessages.length === 0) return;
+
+        const msg = validMessages[Math.floor(Math.random() * validMessages.length)];
+        const senderClass = msg.sender === chatData.senders.sender1 ? 's1' : 's2';
+        const icons = ['💕', '✨', '🌹', '💫', '🦋', '💗', '🌸'];
+        const icon = icons[Math.floor(Math.random() * icons.length)];
+
+        // Remove existing modal if any
+        const existing = document.querySelector('.random-modal');
+        if (existing) existing.remove();
+
+        const modal = document.createElement('div');
+        modal.className = 'random-modal';
+        modal.innerHTML = `
+            <div class="random-modal-card">
+                <div class="random-modal-icon">${icon}</div>
+                <div class="random-modal-sender ${senderClass}">${escapeHtml(msg.sender)}</div>
+                <div class="random-modal-text">"${escapeHtml(msg.text)}"</div>
+                <div class="random-modal-date">${formatDateArabic(msg.date)} — ${msg.time}</div>
+                <div class="random-modal-actions">
+                    <button class="random-modal-btn primary" id="random-another">🎲 ذكرى ثانية</button>
+                    <button class="random-modal-btn secondary" id="random-close">إغلاق</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        modal.querySelector('#random-another').addEventListener('click', () => {
+            modal.remove();
+            showRandomMemory();
+        });
+        modal.querySelector('#random-close').addEventListener('click', () => {
+            modal.remove();
+        });
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
+        });
     }
 
     // ===== Chat Messages =====

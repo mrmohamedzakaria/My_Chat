@@ -1,3 +1,285 @@
+/* ===== Lock Screen ===== */
+.lock-screen {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 99999;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.lock-screen.unlocked {
+    opacity: 0;
+    transform: scale(1.1);
+    pointer-events: none;
+}
+
+.lock-screen.hidden { display: none; }
+
+.lock-content {
+    text-align: center;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.lock-icon {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    animation: lockPulse 2s ease-in-out infinite;
+}
+
+@keyframes lockPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.lock-title {
+    font-family: var(--font-decorative);
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+}
+
+.lock-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 30px;
+}
+
+.lock-input-wrapper {
+    margin-bottom: 20px;
+}
+
+.lock-input {
+    background: var(--glass-bg);
+    border: 2px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 14px 24px;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    text-align: center;
+    letter-spacing: 8px;
+    font-family: var(--font-main);
+    outline: none;
+    width: 200px;
+    transition: var(--transition-normal);
+}
+
+.lock-input:focus {
+    border-color: var(--primary-pink);
+    box-shadow: 0 0 25px rgba(255, 107, 157, 0.2);
+}
+
+.lock-input.shake {
+    animation: lockShake 0.4s ease;
+}
+
+@keyframes lockShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    50% { transform: translateX(10px); }
+    75% { transform: translateX(-5px); }
+}
+
+.lock-btn {
+    background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+    color: white;
+    border: none;
+    border-radius: var(--radius-xl);
+    padding: 12px 40px;
+    font-family: var(--font-main);
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    box-shadow: 0 4px 20px rgba(255, 107, 157, 0.3);
+}
+
+.lock-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(255, 107, 157, 0.5);
+}
+
+.lock-error {
+    color: var(--accent-rose);
+    margin-top: 15px;
+    font-size: 0.9rem;
+    animation: fadeInUp 0.3s ease-out;
+}
+
+.lock-error.hidden { display: none; }
+
+/* ===== Love Counter ===== */
+.love-counter {
+    margin: 20px 0;
+    padding: 15px 25px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.love-counter-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.love-counter-value {
+    font-family: var(--font-decorative);
+    font-size: 1.3rem;
+    color: var(--primary-gold);
+    line-height: 1.8;
+}
+
+.love-counter-value span {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--primary-pink);
+}
+
+/* ===== First Message Box ===== */
+.first-message-box {
+    margin: 20px 0;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(255, 107, 157, 0.06), rgba(196, 77, 255, 0.06));
+    border: 1px solid rgba(255, 107, 157, 0.15);
+    border-radius: var(--radius-lg);
+    text-align: center;
+}
+
+.first-msg-label {
+    font-size: 0.85rem;
+    color: var(--primary-gold);
+    margin-bottom: 10px;
+}
+
+.first-msg-text {
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    line-height: 1.8;
+    font-style: italic;
+    direction: rtl;
+}
+
+.first-msg-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 10px;
+}
+
+/* ===== Random Memory Button ===== */
+.random-memory-btn {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    padding: 12px 30px;
+    color: var(--text-secondary);
+    font-family: var(--font-main);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    margin-bottom: 15px;
+}
+
+.random-memory-btn:hover {
+    background: rgba(255, 107, 157, 0.08);
+    border-color: var(--primary-pink);
+    color: var(--primary-pink);
+    transform: scale(1.05);
+}
+
+/* Random Memory Modal */
+.random-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    animation: fadeIn 0.3s ease-out;
+    padding: 20px;
+}
+
+.random-modal.hidden { display: none; }
+
+.random-modal-card {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 30px;
+    max-width: 450px;
+    width: 100%;
+    text-align: center;
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.random-modal-icon { font-size: 2.5rem; margin-bottom: 15px; }
+
+.random-modal-sender {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+.random-modal-sender.s1 { color: var(--primary-pink); }
+.random-modal-sender.s2 { color: var(--accent-lavender); }
+
+.random-modal-text {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    line-height: 1.8;
+    margin-bottom: 15px;
+    direction: rtl;
+}
+
+.random-modal-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+.random-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.random-modal-btn {
+    padding: 10px 24px;
+    border-radius: var(--radius-xl);
+    font-family: var(--font-main);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    border: none;
+}
+
+.random-modal-btn.primary {
+    background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+    color: white;
+}
+
+.random-modal-btn.secondary {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+}
+
+.random-modal-btn:hover {
+    transform: scale(1.05);
+}
+
 /* ===== Cinematic Intro ===== */
 .intro-overlay {
     position: fixed;

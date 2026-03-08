@@ -17,7 +17,21 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💕</text></svg>">
 </head>
 <body>
-    <!-- Cinematic Intro -->
+    <!-- Password Lock Screen -->
+    <div id="lock-screen" class="lock-screen">
+        <div class="lock-content">
+            <div class="lock-icon">🔒</div>
+            <div class="lock-title">محادثتنا</div>
+            <div class="lock-subtitle">ادخلي الرقم السري عشان تشوفي الذكريات</div>
+            <div class="lock-input-wrapper">
+                <input type="password" id="lock-input" class="lock-input" placeholder="••••" maxlength="10" autocomplete="off">
+            </div>
+            <button class="lock-btn" id="lock-btn">ادخلي 💕</button>
+            <div class="lock-error hidden" id="lock-error">الرقم غلط، حاولي تاني 💔</div>
+        </div>
+    </div>
+
+    <!-- Cinematic Intro (hidden until unlocked) -->
     <div id="intro-overlay" class="intro-overlay">
         <div class="intro-particles" id="intro-particles"></div>
         <div class="intro-center">
@@ -105,6 +119,15 @@
             <div class="welcome-stats-preview" id="welcome-stats-preview">
                 <!-- Filled by JS -->
             </div>
+            <div class="love-counter" id="love-counter">
+                <!-- Filled by JS: "معاً منذ X سنة و Y شهر و Z يوم" -->
+            </div>
+            <div class="first-message-box" id="first-message-box">
+                <!-- Filled by JS: first ever message -->
+            </div>
+            <button class="random-memory-btn" id="btn-random-memory">
+                🎲 ذكرى عشوائية
+            </button>
             <button class="welcome-btn" id="btn-start">
                 <span class="btn-text">ابدأ الرحلة</span>
                 <span class="btn-icon">✨</span>
