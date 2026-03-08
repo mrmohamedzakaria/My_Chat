@@ -47,7 +47,6 @@
         createStars();
         createFloatingHearts();
         setupNavigation();
-        setupScrollButton();
         setupBookmark();
         setupThemePicker();
         loadChat();
@@ -532,51 +531,11 @@
     }
 
 
-    // ===== Scroll Button =====
-    function setupScrollButton() {
-        const btn = $('scroll-bottom');
-        const container = $('chat-messages');
-
-        container.addEventListener('scroll', () => {
-            const { scrollTop, scrollHeight, clientHeight } = container;
-            btn.classList.toggle('visible', scrollTop < scrollHeight - clientHeight - 300);
-        });
-
-        btn.addEventListener('click', () => {
-            while (renderedCount < chatData.messages.length) {
-                renderBatch();
-            }
-            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-        });
-    }
-
-    // ===== Bookmark =====
+    // ===== Auto-Save Bookmark =====
     function setupBookmark() {
-        const bookmarkBtn = $('bookmark-btn');
         const banner = $('bookmark-banner');
         const goBtn = $('bookmark-go');
         const dismissBtn = $('bookmark-dismiss');
-        const toast = $('bookmark-toast');
-
-        bookmarkBtn.addEventListener('click', () => {
-            const container = $('chat-messages');
-            const bubbles = container.querySelectorAll('.message-bubble');
-            let closestIndex = 0;
-            const containerRect = container.getBoundingClientRect();
-            const centerY = containerRect.top + containerRect.height / 2;
-
-            for (const bubble of bubbles) {
-                const rect = bubble.getBoundingClientRect();
-                if (rect.top <= centerY && rect.bottom >= centerY - 50) {
-                    closestIndex = parseInt(bubble.dataset.index) || 0;
-                }
-            }
-
-            localStorage.setItem('chat_bookmark', closestIndex.toString());
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 2500);
-            insertBookmarkMarker(closestIndex);
-        });
 
         goBtn.addEventListener('click', () => {
             goToBookmark();
@@ -586,11 +545,52 @@
         dismissBtn.addEventListener('click', () => {
             banner.classList.add('hidden');
         });
+
+        // Auto-save position on scroll (debounced)
+        let saveTimer;
+        const container = $('chat-messages');
+        container.addEventListener('scroll', () => {
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => {
+                autoSavePosition();
+            }, 500);
+        });
+
+        // Auto-save on page leave
+        window.addEventListener('beforeunload', autoSavePosition);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                autoSavePosition();
+            }
+        });
+    }
+
+    function autoSavePosition() {
+        const container = $('chat-messages');
+        if (!container || !filteredMessages || filteredMessages.length === 0) return;
+
+        const bubbles = container.querySelectorAll('.message-bubble');
+        if (bubbles.length === 0) return;
+
+        let closestIndex = 0;
+        const containerRect = container.getBoundingClientRect();
+        const centerY = containerRect.top + containerRect.height / 2;
+
+        for (const bubble of bubbles) {
+            const rect = bubble.getBoundingClientRect();
+            if (rect.top <= centerY && rect.bottom >= centerY - 50) {
+                closestIndex = parseInt(bubble.dataset.index) || 0;
+            }
+        }
+
+        if (closestIndex > 0) {
+            localStorage.setItem('chat_bookmark', closestIndex.toString());
+        }
     }
 
     function checkForBookmark() {
         const saved = localStorage.getItem('chat_bookmark');
-        if (saved !== null && chatData) {
+        if (saved !== null && parseInt(saved) > 0 && chatData) {
             $('bookmark-banner').classList.remove('hidden');
         }
     }
@@ -619,7 +619,7 @@
         if (bubble) {
             const marker = document.createElement('div');
             marker.className = 'bookmark-marker';
-            marker.innerHTML = '<span class="bookmark-marker-text">📌 وقفنا هنا</span>';
+            marker.innerHTML = '<span class="bookmark-marker-text">📌 وقفت هنا</span>';
             bubble.parentNode.insertBefore(marker, bubble);
         }
     }
