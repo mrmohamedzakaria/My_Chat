@@ -12,6 +12,10 @@
         'Om Zakaria': 'بطوط'
     };
 
+    // ===== Display Cutoff =====
+    // Messages after this date will NOT be shown (set to null to show all)
+    const CUTOFF_DATE = new Date(2020, 1, 20); // 20 February 2020
+
     // ===== State =====
     let chatData = null;
     let stats = null;
@@ -210,6 +214,16 @@
             chatData.senders.sender1 = NAME_MAP[chatData.senders.sender1] || chatData.senders.sender1;
             chatData.senders.sender2 = NAME_MAP[chatData.senders.sender2] || chatData.senders.sender2;
 
+            // Apply cutoff date filter
+            if (CUTOFF_DATE) {
+                chatData.messages = chatData.messages.filter(m => {
+                    try {
+                        const d = ChatParser.parseDate(m.date);
+                        return d <= CUTOFF_DATE;
+                    } catch (e) { return true; }
+                });
+            }
+
             stats = ChatParser.calculateStats(chatData.messages, chatData.senders);
 
             // Update welcome stats preview
@@ -317,7 +331,7 @@
 
     function renderChatMessages() {
         applyYearFilter('all');
-        renderYearFilter();
+        // Year filter buttons hidden — cutoff date controls display
 
         const container = $('chat-messages');
         container.innerHTML = '';
