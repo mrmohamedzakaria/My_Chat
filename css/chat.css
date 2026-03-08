@@ -5,18 +5,19 @@
     height: 100vh;
 }
 
-/* Chat Header with Search */
+/* Chat Header */
 .chat-header {
     position: fixed;
     top: 55px;
     left: 0;
     right: 0;
     z-index: 50;
-    padding: 10px 20px 8px;
+    padding: 12px 20px;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    background: rgba(13, 13, 26, 0.7);
+    background: rgba(13, 13, 26, 0.85);
     border-bottom: 1px solid var(--glass-border);
+    overflow: visible;
 }
 
 /* Year Filter */
@@ -76,25 +77,28 @@
 
 /* Bookmark Header Button */
 .bookmark-header-btn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 22px;
-    border: 1px solid rgba(255, 215, 0, 0.25);
+    gap: 6px;
+    padding: 8px 20px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
     border-radius: var(--radius-xl);
-    background: rgba(255, 215, 0, 0.08);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 179, 71, 0.08));
     color: var(--primary-gold);
     font-family: var(--font-main);
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition-normal);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .bookmark-header-btn:hover {
-    background: rgba(255, 215, 0, 0.15);
-    border-color: rgba(255, 215, 0, 0.4);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 179, 71, 0.15));
+    border-color: rgba(255, 215, 0, 0.5);
     transform: scale(1.05);
+    box-shadow: 0 2px 15px rgba(255, 215, 0, 0.2);
 }
 
 .bookmark-header-btn:active {
