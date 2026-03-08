@@ -73,6 +73,7 @@
     align-items: center;
     justify-content: center;
     gap: 12px;
+    overflow: visible;
 }
 
 /* Bookmark Header Button */
@@ -80,7 +81,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 20px;
+    padding: 10px 20px;
     border: 1px solid rgba(255, 215, 0, 0.3);
     border-radius: var(--radius-xl);
     background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 179, 71, 0.08));
@@ -92,6 +93,10 @@
     transition: var(--transition-normal);
     white-space: nowrap;
     flex-shrink: 0;
+    line-height: 1.6;
+    height: auto;
+    min-height: 40px;
+    overflow: visible;
 }
 
 .bookmark-header-btn:hover {
