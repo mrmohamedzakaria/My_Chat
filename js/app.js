@@ -473,7 +473,6 @@
     }
 
     function performSearch(query) {
-        clearSearchHighlights();
         const countEl = $('search-count');
         const navEl = $('search-nav');
 
@@ -485,50 +484,38 @@
             return;
         }
 
-        // Make sure all messages are rendered for search
-        while (renderedCount < chatData.messages.length) {
-            renderBatch();
-        }
-
+        // Search through DATA, not DOM — fast even with 70k+ messages
         searchResults = [];
         searchIndex = -1;
-
-        const bubbles = document.querySelectorAll('.message-bubble .message-text');
         const lowerQuery = query.toLowerCase();
 
-        bubbles.forEach((el) => {
-            const text = el.textContent.toLowerCase();
-            if (text.includes(lowerQuery)) {
-                searchResults.push(el);
-                highlightText(el, query);
+        for (let i = 0; i < chatData.messages.length; i++) {
+            const msg = chatData.messages[i];
+            if (!msg.isSystem && msg.text.toLowerCase().includes(lowerQuery)) {
+                searchResults.push(i); // store message INDEX
             }
-        });
+        }
 
         if (searchResults.length > 0) {
             countEl.textContent = `${searchResults.length} نتيجة`;
             navEl.classList.add('visible');
-            navigateSearch(1);
+            navigateSearch(1); // jump to first result
         } else {
             countEl.textContent = 'لا توجد نتائج';
             navEl.classList.remove('visible');
         }
     }
 
-    function highlightText(el, query) {
-        const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
-        el.innerHTML = el.textContent.replace(regex, '<mark class="search-highlight">$1</mark>');
-    }
-
-    function clearSearchHighlights() {
+    function clearSearch() {
+        // Remove highlight from current result
+        document.querySelectorAll('.search-active-bubble').forEach(el => {
+            el.classList.remove('search-active-bubble');
+        });
         document.querySelectorAll('.search-highlight').forEach(mark => {
             const parent = mark.parentNode;
             parent.replaceChild(document.createTextNode(mark.textContent), mark);
             parent.normalize();
         });
-    }
-
-    function clearSearch() {
-        clearSearchHighlights();
         $('search-count').textContent = '';
         $('search-nav').classList.remove('visible');
         searchResults = [];
@@ -538,19 +525,39 @@
     function navigateSearch(direction) {
         if (searchResults.length === 0) return;
 
-        document.querySelectorAll('.active-highlight').forEach(el => {
-            el.classList.remove('active-highlight');
+        // Remove previous highlight
+        document.querySelectorAll('.search-active-bubble').forEach(el => {
+            el.classList.remove('search-active-bubble');
+        });
+        document.querySelectorAll('.search-highlight').forEach(mark => {
+            const parent = mark.parentNode;
+            parent.replaceChild(document.createTextNode(mark.textContent), mark);
+            parent.normalize();
         });
 
         searchIndex += direction;
         if (searchIndex >= searchResults.length) searchIndex = 0;
         if (searchIndex < 0) searchIndex = searchResults.length - 1;
 
-        const target = searchResults[searchIndex];
-        const mark = target.querySelector('.search-highlight');
-        if (mark) {
-            mark.classList.add('active-highlight');
-            mark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const msgIndex = searchResults[searchIndex];
+
+        // Ensure messages up to this index are rendered
+        while (renderedCount <= msgIndex + 5 && renderedCount < chatData.messages.length) {
+            renderBatch();
+        }
+
+        // Find and highlight the bubble
+        const bubble = document.querySelector(`[data-index="${msgIndex}"]`);
+        if (bubble) {
+            bubble.classList.add('search-active-bubble');
+            // Highlight the search text within this bubble
+            const textEl = bubble.querySelector('.message-text');
+            if (textEl) {
+                const query = $('search-input').value;
+                const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+                textEl.innerHTML = textEl.textContent.replace(regex, '<mark class="search-highlight">$1</mark>');
+            }
+            bubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         $('search-count').textContent = `${searchIndex + 1} / ${searchResults.length}`;
