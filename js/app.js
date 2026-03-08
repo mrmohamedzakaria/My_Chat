@@ -7,7 +7,6 @@
     'use strict';
 
     // ===== Name Mapping =====
-    // Replace WhatsApp contact names with display names
     const NAME_MAP = {
         'Mm': 'محمد',
         'Om Zakaria': 'بطوط'
@@ -16,31 +15,64 @@
     // ===== State =====
     let chatData = null;
     let stats = null;
-    let currentPage = 'welcome';
+    let currentPage = 'dedication';
     let searchResults = [];
     let searchIndex = -1;
     let renderedCount = 0;
+    let favorites = JSON.parse(localStorage.getItem('chat_favorites') || '[]');
     const BATCH_SIZE = 80;
     const SEARCH_DEBOUNCE = 300;
 
     // ===== DOM Elements =====
     const $ = id => document.getElementById(id);
     const pages = {
+        dedication: $('page-dedication'),
         welcome: $('page-welcome'),
         chat: $('page-chat'),
+        favorites: $('page-favorites'),
         stats: $('page-stats'),
+        onthisday: $('page-onthisday'),
         timeline: $('page-timeline')
     };
 
     // ===== Initialization =====
     function init() {
+        runIntro();
         createStars();
         createFloatingHearts();
         setupNavigation();
         setupSearch();
         setupScrollButton();
         setupBookmark();
+        setupThemePicker();
         loadChat();
+    }
+
+    // ===== Cinematic Intro =====
+    function runIntro() {
+        const overlay = $('intro-overlay');
+        const particlesContainer = $('intro-particles');
+
+        // Create floating particles
+        const emojis = ['💕', '💗', '💖', '❤️', '✨', '💫', '🌹', '💐', '🦋', '🌸'];
+        for (let i = 0; i < 25; i++) {
+            const p = document.createElement('span');
+            p.className = 'intro-particle';
+            p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = (Math.random() * 3) + 's';
+            p.style.animationDuration = (3 + Math.random() * 3) + 's';
+            particlesContainer.appendChild(p);
+        }
+
+        // After 4 seconds, fade out intro and show dedication
+        setTimeout(() => {
+            overlay.classList.add('fade-out');
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                navigateTo('dedication');
+            }, 1000);
+        }, 4000);
     }
 
     // ===== Stars Background =====
@@ -96,11 +128,15 @@
         $('btn-start').addEventListener('click', () => {
             navigateTo('chat');
         });
+
+        $('btn-dedication-next').addEventListener('click', () => {
+            navigateTo('welcome');
+        });
     }
 
     function navigateTo(pageName) {
         // Hide current
-        Object.values(pages).forEach(p => p.classList.remove('active'));
+        Object.values(pages).forEach(p => { if (p) p.classList.remove('active'); });
 
         // Update navbar
         document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
@@ -108,15 +144,18 @@
         if (navLink) navLink.classList.add('active');
 
         // Show target
-        pages[pageName].classList.add('active');
+        if (pages[pageName]) pages[pageName].classList.add('active');
         currentPage = pageName;
 
-        // Show/hide navbar
+        // Show/hide navbar & theme picker
         const navbar = $('navbar');
-        if (pageName === 'welcome') {
+        const themePicker = $('theme-picker');
+        if (pageName === 'welcome' || pageName === 'dedication') {
             navbar.classList.add('hidden');
+            themePicker.style.display = 'none';
         } else {
             navbar.classList.remove('hidden');
+            themePicker.style.display = 'flex';
         }
 
         // Render page content if needed
@@ -124,8 +163,14 @@
             renderChatMessages();
             checkForBookmark();
         }
+        if (pageName === 'favorites' && chatData) {
+            renderFavorites();
+        }
         if (pageName === 'stats' && chatData) {
             renderStats();
+        }
+        if (pageName === 'onthisday' && chatData) {
+            renderOnThisDay();
         }
         if (pageName === 'timeline' && chatData) {
             renderTimeline();
@@ -160,7 +205,6 @@
                     m.sender = NAME_MAP[m.sender];
                 }
             });
-            // Remap senders
             chatData.senders.sender1 = NAME_MAP[chatData.senders.sender1] || chatData.senders.sender1;
             chatData.senders.sender2 = NAME_MAP[chatData.senders.sender2] || chatData.senders.sender2;
 
@@ -250,7 +294,9 @@
             if (msg.isSystem) {
                 bubble.textContent = msg.text;
             } else {
+                const isFav = favorites.includes(i);
                 bubble.innerHTML = `
+                    <button class="fav-btn ${isFav ? 'active' : ''}" data-fav-index="${i}" title="أضف للمفضلة">❤️</button>
                     <span class="message-sender">${escapeHtml(msg.sender)}</span>
                     <span class="message-text">${escapeHtml(msg.text)}</span>
                     <span class="message-time">${msg.time}</span>
@@ -270,6 +316,16 @@
 
         container.appendChild(fragment);
         renderedCount = end;
+
+        // Attach favorite listeners for new batch
+        container.querySelectorAll('.fav-btn:not([data-bound])').forEach(btn => {
+            btn.dataset.bound = '1';
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(btn.dataset.favIndex);
+                toggleFavorite(idx, btn);
+            });
+        });
     }
 
     function formatDateArabic(dateStr) {
@@ -284,12 +340,120 @@
         }
     }
 
+    // ===== Favorites =====
+    function toggleFavorite(msgIndex, btn) {
+        const idx = favorites.indexOf(msgIndex);
+        if (idx > -1) {
+            favorites.splice(idx, 1);
+            btn.classList.remove('active');
+        } else {
+            favorites.push(msgIndex);
+            btn.classList.add('active');
+        }
+        localStorage.setItem('chat_favorites', JSON.stringify(favorites));
+    }
+
+    function renderFavorites() {
+        const container = $('fav-content');
+        if (!chatData || favorites.length === 0) {
+            container.innerHTML = `
+                <div class="fav-empty">
+                    <span class="fav-empty-icon">💔</span>
+                    لم تضف أي رسائل للمفضلة بعد<br>
+                    <small style="color:var(--text-muted)">اضغط ❤️ على أي رسالة في المحادثة لإضافتها</small>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        const sortedFavs = [...favorites].sort((a, b) => a - b);
+        
+        sortedFavs.forEach(idx => {
+            if (idx >= chatData.messages.length) return;
+            const msg = chatData.messages[idx];
+            if (msg.isSystem) return;
+            
+            const senderClass = msg.sender === chatData.senders.sender1 ? 's1' : 's2';
+            html += `
+                <div class="otd-message" style="animation-delay: ${Math.random() * 0.3}s">
+                    <div class="otd-message-sender ${senderClass}">${escapeHtml(msg.sender)}</div>
+                    <div class="otd-message-text">${escapeHtml(msg.text)}</div>
+                    <div class="otd-message-time">${formatDateArabic(msg.date)} — ${msg.time}</div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    // ===== On This Day =====
+    function renderOnThisDay() {
+        const container = $('otd-content');
+        if (!chatData) return;
+
+        const today = new Date();
+        const todayDay = today.getDate();
+        const todayMonth = today.getMonth();
+
+        // Find messages from the same day and month in previous years
+        const yearGroups = {};
+
+        chatData.messages.forEach((msg, idx) => {
+            const d = ChatParser.parseDate(msg.date);
+            if (d.getDate() === todayDay && d.getMonth() === todayMonth) {
+                const year = d.getFullYear();
+                if (!yearGroups[year]) yearGroups[year] = [];
+                yearGroups[year].push({ msg, idx });
+            }
+        });
+
+        const years = Object.keys(yearGroups).sort((a, b) => b - a);
+
+        if (years.length === 0) {
+            container.innerHTML = `
+                <div class="otd-empty">
+                    <span class="otd-empty-icon">📭</span>
+                    لا توجد رسائل في مثل هذا اليوم (${todayDay} ${ChatParser.getArabicMonth(todayMonth)})<br>
+                    <small style="color:var(--text-muted)">جرب العودة في يوم آخر لاكتشاف ذكريات جديدة</small>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        years.forEach(year => {
+            const msgs = yearGroups[year];
+            html += `<div class="otd-year-section">`;
+            html += `<div class="otd-year-label">📅 ${year}</div>`;
+            
+            // Show up to 20 messages per year
+            msgs.slice(0, 20).forEach(({ msg }) => {
+                const senderClass = msg.sender === chatData.senders.sender1 ? 's1' : 's2';
+                if (!msg.isSystem) {
+                    html += `
+                        <div class="otd-message">
+                            <div class="otd-message-sender ${senderClass}">${escapeHtml(msg.sender)}</div>
+                            <div class="otd-message-text">${escapeHtml(msg.text)}</div>
+                            <div class="otd-message-time">${msg.time}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            if (msgs.length > 20) {
+                html += `<div style="text-align:center;color:var(--text-muted);padding:10px;">... و ${msgs.length - 20} رسالة أخرى</div>`;
+            }
+            html += `</div>`;
+        });
+
+        container.innerHTML = html;
+    }
+
     // ===== Search =====
     function setupSearch() {
         const input = $('search-input');
         const clearBtn = $('search-clear');
-        const countEl = $('search-count');
-        const navEl = $('search-nav');
         let debounceTimer;
 
         input.addEventListener('input', () => {
@@ -332,7 +496,7 @@
         const bubbles = document.querySelectorAll('.message-bubble .message-text');
         const lowerQuery = query.toLowerCase();
 
-        bubbles.forEach((el, idx) => {
+        bubbles.forEach((el) => {
             const text = el.textContent.toLowerCase();
             if (text.includes(lowerQuery)) {
                 searchResults.push(el);
@@ -343,7 +507,7 @@
         if (searchResults.length > 0) {
             countEl.textContent = `${searchResults.length} نتيجة`;
             navEl.classList.add('visible');
-            navigateSearch(1); // jump to first result
+            navigateSearch(1);
         } else {
             countEl.textContent = 'لا توجد نتائج';
             navEl.classList.remove('visible');
@@ -374,7 +538,6 @@
     function navigateSearch(direction) {
         if (searchResults.length === 0) return;
 
-        // Remove previous active
         document.querySelectorAll('.active-highlight').forEach(el => {
             el.classList.remove('active-highlight');
         });
@@ -404,7 +567,6 @@
         });
 
         btn.addEventListener('click', () => {
-            // Render all messages first
             while (renderedCount < chatData.messages.length) {
                 renderBatch();
             }
@@ -420,10 +582,8 @@
         const dismissBtn = $('bookmark-dismiss');
         const toast = $('bookmark-toast');
 
-        // Save bookmark
         bookmarkBtn.addEventListener('click', () => {
             const container = $('chat-messages');
-            // Find the message currently visible in the center of the viewport
             const bubbles = container.querySelectorAll('.message-bubble');
             let closestIndex = 0;
             const containerRect = container.getBoundingClientRect();
@@ -437,22 +597,16 @@
             }
 
             localStorage.setItem('chat_bookmark', closestIndex.toString());
-
-            // Show toast
             toast.classList.remove('hidden');
             setTimeout(() => toast.classList.add('hidden'), 2500);
-
-            // Insert visual marker
             insertBookmarkMarker(closestIndex);
         });
 
-        // Go to bookmark
         goBtn.addEventListener('click', () => {
             goToBookmark();
             banner.classList.add('hidden');
         });
 
-        // Dismiss banner
         dismissBtn.addEventListener('click', () => {
             banner.classList.add('hidden');
         });
@@ -461,42 +615,30 @@
     function checkForBookmark() {
         const saved = localStorage.getItem('chat_bookmark');
         if (saved !== null && chatData) {
-            const banner = $('bookmark-banner');
-            banner.classList.remove('hidden');
+            $('bookmark-banner').classList.remove('hidden');
         }
     }
 
     function goToBookmark() {
         const saved = localStorage.getItem('chat_bookmark');
         if (saved === null || !chatData) return;
-
         const msgIndex = parseInt(saved);
-        
-        // Ensure messages up to that point are rendered
         while (renderedCount <= msgIndex + 10 && renderedCount < chatData.messages.length) {
             renderBatch();
         }
-
-        // Insert marker if not already there
         insertBookmarkMarker(msgIndex);
-
         setTimeout(() => {
             const marker = document.querySelector('.bookmark-marker');
-            if (marker) {
-                marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            } else {
+            if (marker) marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            else {
                 const bubble = document.querySelector(`[data-index="${msgIndex}"]`);
-                if (bubble) {
-                    bubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
+                if (bubble) bubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }, 100);
     }
 
     function insertBookmarkMarker(msgIndex) {
-        // Remove old markers
         document.querySelectorAll('.bookmark-marker').forEach(m => m.remove());
-
         const bubble = document.querySelector(`[data-index="${msgIndex}"]`);
         if (bubble) {
             const marker = document.createElement('div');
@@ -506,26 +648,68 @@
         }
     }
 
+    // ===== Theme Picker =====
+    function setupThemePicker() {
+        const savedTheme = localStorage.getItem('chat_theme') || 'pink';
+        applyTheme(savedTheme);
+
+        document.querySelectorAll('.theme-dot').forEach(dot => {
+            if (dot.dataset.theme === savedTheme) dot.classList.add('active');
+            else dot.classList.remove('active');
+
+            dot.addEventListener('click', () => {
+                document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
+                dot.classList.add('active');
+                const theme = dot.dataset.theme;
+                applyTheme(theme);
+                localStorage.setItem('chat_theme', theme);
+            });
+        });
+    }
+
+    function applyTheme(theme) {
+        document.body.classList.remove('theme-ocean', 'theme-gold', 'theme-rose');
+        if (theme !== 'pink') {
+            document.body.classList.add(`theme-${theme}`);
+        }
+    }
+
     // ===== Stats Page =====
     function renderStats() {
         if (!stats) return;
         const container = $('stats-content');
-        if (container.children.length > 0) return; // Already rendered
+        if (container.children.length > 0) return;
 
         const s = stats;
         const topWords = ChatParser.getTopWords(s.wordFrequency, 20);
         const topEmojis = ChatParser.getTopEmojis(s.emojiFrequency, 12);
         
-        // Find peak hour
         const peakHour = s.hourlyDistribution.indexOf(Math.max(...s.hourlyDistribution));
         const peakHourFormatted = peakHour > 12 ? `${peakHour - 12} مساءً` : peakHour === 0 ? '12 صباحاً' : `${peakHour} صباحاً`;
 
         const sender1Pct = Math.round((s.sender1Count / s.totalMessages) * 100);
         const sender2Pct = 100 - sender1Pct;
 
+        // Find most active month
+        let mostActiveMonth = { key: '', total: 0 };
+        Object.entries(s.monthlyMessages).forEach(([key, data]) => {
+            if (data.total > mostActiveMonth.total) {
+                mostActiveMonth = { key, total: data.total };
+            }
+        });
+        let mostActiveMonthLabel = '';
+        if (mostActiveMonth.key) {
+            const [y, m] = mostActiveMonth.key.split('-');
+            mostActiveMonthLabel = `${ChatParser.getArabicMonth(parseInt(m) - 1)} ${y}`;
+        }
+
+        // Happy/love emoji count
+        const loveEmojis = ['❤️', '💕', '💗', '💖', '💝', '😍', '🥰', '😘', '💋', '💕'];
+        let loveCount = 0;
+        loveEmojis.forEach(e => { loveCount += (s.emojiFrequency[e] || 0); });
+
         let html = '';
 
-        // Row 1: Total Messages + Days Together
         html += createStatCard('💬', 'إجمالي الرسائل', ChatParser.formatNumber(s.totalMessages), '', 0);
         html += createStatCard('📅', 'أيام معاً', ChatParser.formatNumber(s.totalDays), `${ChatParser.formatNumber(s.avgMessagesPerDay)} رسالة/يوم`, 1);
         html += createStatCard('📝', 'إجمالي الكلمات', ChatParser.formatNumber(s.totalWords), '', 2);
@@ -556,19 +740,22 @@
             </div>
         `;
 
-        // Busiest Day
+        // New deeper stats
         html += createStatCard('🔥', 'أكثر يوم نشاطاً', formatDateArabic(s.busiestDay.date), `${ChatParser.formatNumber(s.busiestDay.count)} رسالة`, 4);
-        
-        // Peak Hour
         html += createStatCard('⏰', 'ساعة الذروة', peakHourFormatted, `${ChatParser.formatNumber(s.hourlyDistribution[peakHour])} رسالة`, 5);
-
-        // Longest Message
         html += createStatCard('📜', 'أطول رسالة', `${ChatParser.formatNumber(s.longestMessage.length)} حرف`, `بواسطة ${escapeHtml(s.longestMessage.sender)}`, 6);
+        
+        // Most active month
+        if (mostActiveMonthLabel) {
+            html += createStatCard('📆', 'أكثر شهر نشاطاً', mostActiveMonthLabel, `${ChatParser.formatNumber(mostActiveMonth.total)} رسالة`, 7);
+        }
+        
+        // Love emojis count
+        html += createStatCard('💕', 'إيموجي الحب', ChatParser.formatNumber(loveCount), 'قلب وحبّ أرسلتموهم', 8);
 
-        // Hourly Distribution Chart
+        // Hourly Distribution
         const maxHourly = Math.max(...s.hourlyDistribution);
         let hourlyBarsHtml = '<div class="stat-bar-chart">';
-        // Show selective hours for readability
         [0, 3, 6, 9, 12, 15, 18, 21].forEach(h => {
             const pct = maxHourly > 0 ? (s.hourlyDistribution[h] / maxHourly) * 100 : 0;
             const label = h > 12 ? `${h - 12} م` : h === 0 ? '12 ص' : `${h} ص`;
@@ -586,7 +773,7 @@
         hourlyBarsHtml += '</div>';
 
         html += `
-            <div class="stat-card stat-card-full" style="animation-delay: 0.7s;">
+            <div class="stat-card stat-card-full" style="animation-delay: 0.9s;">
                 <span class="stat-card-icon">🕐</span>
                 <span class="stat-card-label">التوزيع على مدار اليوم</span>
                 ${hourlyBarsHtml}
@@ -607,7 +794,7 @@
             emojisHtml += '</div>';
 
             html += `
-                <div class="stat-card stat-card-full" style="animation-delay: 0.8s;">
+                <div class="stat-card stat-card-full" style="animation-delay: 1s;">
                     <span class="stat-card-icon">😍</span>
                     <span class="stat-card-label">أكثر الإيموجي استخداماً</span>
                     ${emojisHtml}
@@ -626,7 +813,7 @@
             wordsHtml += '</div>';
 
             html += `
-                <div class="stat-card stat-card-full" style="animation-delay: 0.9s;">
+                <div class="stat-card stat-card-full" style="animation-delay: 1.1s;">
                     <span class="stat-card-icon">💬</span>
                     <span class="stat-card-label">أكثر الكلمات استخداماً</span>
                     ${wordsHtml}
@@ -636,7 +823,7 @@
 
         // Words comparison
         html += `
-            <div class="stat-card stat-card-full" style="animation-delay: 1s;">
+            <div class="stat-card stat-card-full" style="animation-delay: 1.2s;">
                 <span class="stat-card-icon">✍️</span>
                 <span class="stat-card-label">مقارنة الكلمات</span>
                 <div class="comparison-row">
@@ -655,14 +842,12 @@
 
         container.innerHTML = html;
 
-        // Animate bars after render
+        // Animate bars
         requestAnimationFrame(() => {
             container.querySelectorAll('.stat-bar-fill').forEach(bar => {
                 const width = bar.style.width;
                 bar.style.width = '0%';
-                requestAnimationFrame(() => {
-                    bar.style.width = width;
-                });
+                requestAnimationFrame(() => { bar.style.width = width; });
             });
         });
     }
@@ -682,20 +867,15 @@
     function renderTimeline() {
         if (!chatData) return;
         const container = $('timeline-content');
-        if (container.children.length > 0) return; // Already rendered
+        if (container.children.length > 0) return;
 
         const timeline = ChatParser.getTimeline(chatData.messages, chatData.senders);
         let html = '';
         let lastYear = null;
 
         timeline.forEach((period, index) => {
-            // Year label
             if (period.year !== lastYear) {
-                html += `
-                    <div class="timeline-year-label">
-                        <span>${period.year}</span>
-                    </div>
-                `;
+                html += `<div class="timeline-year-label"><span>${period.year}</span></div>`;
                 lastYear = period.year;
             }
 
@@ -731,29 +911,23 @@
 
         container.innerHTML = html;
 
-        // Animate mini bars
         requestAnimationFrame(() => {
             container.querySelectorAll('.timeline-mini-fill-1, .timeline-mini-fill-2').forEach(bar => {
                 const width = bar.style.width;
                 bar.style.width = '0%';
-                requestAnimationFrame(() => {
-                    bar.style.width = width;
-                });
+                requestAnimationFrame(() => { bar.style.width = width; });
             });
         });
     }
 
-    // Global function for timeline click
     window.goToMonth = function (monthKey) {
         if (!chatData) return;
         navigateTo('chat');
 
-        // Ensure all messages are rendered
         while (renderedCount < chatData.messages.length) {
             renderBatch();
         }
 
-        // Find first message of that month
         const [year, month] = monthKey.split('-').map(Number);
         const msgIndex = chatData.messages.findIndex(m => {
             const d = ChatParser.parseDate(m.date);
@@ -766,9 +940,7 @@
                 if (bubble) {
                     bubble.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     bubble.style.boxShadow = '0 0 30px rgba(255, 107, 157, 0.5)';
-                    setTimeout(() => {
-                        bubble.style.boxShadow = '';
-                    }, 2000);
+                    setTimeout(() => { bubble.style.boxShadow = ''; }, 2000);
                 }
             }, 100);
         }
