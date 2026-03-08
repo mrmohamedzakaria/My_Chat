@@ -119,17 +119,16 @@
     <!-- Chat Page -->
     <section id="page-chat" class="page chat-page">
         <div class="chat-header">
-            <div class="search-container" id="search-container">
-                <div class="search-input-wrapper">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="search-input" class="search-input" placeholder="ابحث في المحادثة...">
-                    <span class="search-count" id="search-count"></span>
-                    <button class="search-clear" id="search-clear">✕</button>
+            <div class="chat-header-inner">
+                <div class="bookmark-banner hidden" id="bookmark-banner">
+                    <span>📌 يوجد نقطة توقف</span>
+                    <button class="bookmark-go" id="bookmark-go">انتقل إليها</button>
+                    <button class="bookmark-dismiss" id="bookmark-dismiss">✕</button>
                 </div>
-                <div class="search-nav" id="search-nav">
-                    <button class="search-nav-btn" id="search-prev">▲</button>
-                    <button class="search-nav-btn" id="search-next">▼</button>
-                </div>
+                <button class="bookmark-header-btn" id="bookmark-btn">
+                    <span>📌</span>
+                    <span>وقفنا هنا</span>
+                </button>
             </div>
         </div>
         <div class="chat-messages" id="chat-messages">
@@ -139,12 +138,6 @@
             </div>
         </div>
         <button class="scroll-to-bottom" id="scroll-bottom" title="انتقل للأسفل">⬇</button>
-        <button class="bookmark-btn" id="bookmark-btn" title="وقفنا هنا 📌">📌 وقفنا هنا</button>
-        <div class="bookmark-banner hidden" id="bookmark-banner">
-            <span>📌 يوجد نقطة توقف محفوظة</span>
-            <button class="bookmark-go" id="bookmark-go">انتقل إليها</button>
-            <button class="bookmark-dismiss" id="bookmark-dismiss">✕</button>
-        </div>
         <div class="bookmark-toast hidden" id="bookmark-toast">✅ تم حفظ نقطة التوقف!</div>
     </section>
 

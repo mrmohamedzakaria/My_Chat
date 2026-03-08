@@ -466,4 +466,13 @@ body.theme-rose {
     .fav-btn { opacity: 0.4; }
     
     .otd-title, .fav-title { font-size: 1.4rem; }
+
+    .bookmark-header-btn {
+        padding: 6px 16px;
+        font-size: 0.82rem;
+    }
+
+    .chat-header-inner {
+        gap: 8px;
+    }
 }
