@@ -80,23 +80,25 @@
 .bookmark-header-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    padding: 10px 20px;
+    padding: 12px 22px;
     border: 1px solid rgba(255, 215, 0, 0.3);
     border-radius: var(--radius-xl);
     background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 179, 71, 0.08));
     color: var(--primary-gold);
     font-family: var(--font-main);
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition-normal);
     white-space: nowrap;
     flex-shrink: 0;
-    line-height: 1.6;
-    height: auto;
-    min-height: 40px;
+    line-height: 1.8;
+    height: auto !important;
+    min-height: 44px;
     overflow: visible;
+    box-sizing: border-box;
 }
 
 .bookmark-header-btn:hover {
