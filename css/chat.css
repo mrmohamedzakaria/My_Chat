@@ -12,11 +12,56 @@
     left: 0;
     right: 0;
     z-index: 50;
-    padding: 10px 20px;
+    padding: 10px 20px 8px;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     background: rgba(13, 13, 26, 0.7);
     border-bottom: 1px solid var(--glass-border);
+}
+
+/* Year Filter */
+.year-filter {
+    max-width: 800px;
+    margin: 8px auto 0;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 2px;
+}
+
+.year-filter::-webkit-scrollbar {
+    display: none;
+}
+
+.year-btn {
+    flex-shrink: 0;
+    padding: 5px 16px;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    color: var(--text-secondary);
+    font-family: var(--font-main);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    white-space: nowrap;
+}
+
+.year-btn:hover {
+    background: rgba(196, 77, 255, 0.1);
+    border-color: rgba(196, 77, 255, 0.3);
+    color: var(--text-primary);
+}
+
+.year-btn.active {
+    background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+    border-color: transparent;
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 2px 12px rgba(196, 77, 255, 0.3);
 }
 
 .search-container {
@@ -124,7 +169,7 @@
 .chat-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 80px 20px 30px;
+    padding: 110px 20px 30px;
     max-width: 850px;
     margin: 0 auto;
     width: 100%;

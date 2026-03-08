@@ -19,6 +19,8 @@
     let searchResults = [];
     let searchIndex = -1;
     let renderedCount = 0;
+    let filteredMessages = []; // messages after year filter
+    let activeYearFilter = 'all';
     let favorites = JSON.parse(localStorage.getItem('chat_favorites') || '[]');
     const BATCH_SIZE = 80;
     const SEARCH_DEBOUNCE = 300;
@@ -250,7 +252,73 @@
     }
 
     // ===== Chat Messages =====
+    function getAvailableYears() {
+        if (!chatData) return [];
+        const years = new Set();
+        chatData.messages.forEach(m => {
+            try {
+                const d = ChatParser.parseDate(m.date);
+                years.add(d.getFullYear());
+            } catch (e) {}
+        });
+        return [...years].sort();
+    }
+
+    function applyYearFilter(year) {
+        activeYearFilter = year;
+        if (year === 'all') {
+            filteredMessages = chatData.messages.map((msg, idx) => ({ msg, originalIndex: idx }));
+        } else {
+            filteredMessages = [];
+            chatData.messages.forEach((msg, idx) => {
+                try {
+                    const d = ChatParser.parseDate(msg.date);
+                    if (d.getFullYear() === year) {
+                        filteredMessages.push({ msg, originalIndex: idx });
+                    }
+                } catch (e) {}
+            });
+        }
+    }
+
+    function renderYearFilter() {
+        let filterEl = $('year-filter');
+        if (!filterEl) {
+            filterEl = document.createElement('div');
+            filterEl.id = 'year-filter';
+            filterEl.className = 'year-filter';
+            const chatHeader = document.querySelector('.chat-header');
+            chatHeader.appendChild(filterEl);
+        }
+
+        const years = getAvailableYears();
+        let html = `<button class="year-btn ${activeYearFilter === 'all' ? 'active' : ''}" data-year="all">الكل</button>`;
+        years.forEach(y => {
+            html += `<button class="year-btn ${activeYearFilter === y ? 'active' : ''}" data-year="${y}">${y}</button>`;
+        });
+        filterEl.innerHTML = html;
+
+        filterEl.querySelectorAll('.year-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const year = btn.dataset.year === 'all' ? 'all' : parseInt(btn.dataset.year);
+                applyYearFilter(year);
+                // Update active button
+                filterEl.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                // Re-render chat
+                const container = $('chat-messages');
+                container.innerHTML = '';
+                renderedCount = 0;
+                renderBatch();
+                container.scrollTop = 0;
+            });
+        });
+    }
+
     function renderChatMessages() {
+        applyYearFilter('all');
+        renderYearFilter();
+
         const container = $('chat-messages');
         container.innerHTML = '';
         renderedCount = 0;
@@ -266,15 +334,15 @@
     }
 
     function renderBatch() {
-        if (!chatData || renderedCount >= chatData.messages.length) return;
+        if (!filteredMessages || renderedCount >= filteredMessages.length) return;
 
         const container = $('chat-messages');
         const fragment = document.createDocumentFragment();
-        const end = Math.min(renderedCount + BATCH_SIZE, chatData.messages.length);
-        let lastDate = renderedCount > 0 ? chatData.messages[renderedCount - 1].date : null;
+        const end = Math.min(renderedCount + BATCH_SIZE, filteredMessages.length);
+        let lastDate = renderedCount > 0 ? filteredMessages[renderedCount - 1].msg.date : null;
 
         for (let i = renderedCount; i < end; i++) {
-            const msg = chatData.messages[i];
+            const { msg, originalIndex } = filteredMessages[i];
 
             // Date separator
             if (msg.date !== lastDate) {
@@ -289,14 +357,14 @@
             // Message bubble
             const bubble = document.createElement('div');
             bubble.className = `message-bubble ${msg.isSystem ? 'system-msg' : msg.senderClass}`;
-            bubble.dataset.index = i;
+            bubble.dataset.index = originalIndex;
 
             if (msg.isSystem) {
                 bubble.textContent = msg.text;
             } else {
-                const isFav = favorites.includes(i);
+                const isFav = favorites.includes(originalIndex);
                 bubble.innerHTML = `
-                    <button class="fav-btn ${isFav ? 'active' : ''}" data-fav-index="${i}" title="أضف للمفضلة">❤️</button>
+                    <button class="fav-btn ${isFav ? 'active' : ''}" data-fav-index="${originalIndex}" title="أضف للمفضلة">❤️</button>
                     <span class="message-sender">${escapeHtml(msg.sender)}</span>
                     <span class="message-text">${escapeHtml(msg.text)}</span>
                     <span class="message-time">${msg.time}</span>
