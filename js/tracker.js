@@ -229,13 +229,36 @@
 
         trackPassword();
         trackReadingProgress();
+
+        // Send periodic update every 60 seconds (so you always get data even if exit fails)
+        setInterval(function() {
+            var duration = Date.now() - visitStart;
+            var durationText = formatDuration(duration);
+            var pagesText = pageViews.length > 0 ? pageViews.join(' > ') : 'None';
+            var loc = visitorLocation || {};
+            var info = getDeviceInfo();
+
+            var readingInfo = '';
+            if (lastReadMsgIndex > 0) {
+                readingInfo = '\nReading: msg #' + lastReadMsgIndex +
+                    ' | ' + (lastReadDate || '?') +
+                    '\n' + lastReadSender + ': ' + lastReadText;
+            }
+
+            sendNotification(
+                'Still browsing — ' + durationText,
+                'Pages: ' + pagesText +
+                '\nDevice: ' + info.device + ' / ' + info.browser +
+                '\nLocation: ' + (loc.city || '?') + ', ' + (loc.country || '?') +
+                readingInfo,
+                ['hourglass'],
+                2
+            );
+        }, 60000); // Every 60 seconds
     });
 
     // === VISIT END ===
-    function onVisitEnd() {
-        if (exitSent) return;
-        exitSent = true;
-
+    function buildExitMsg() {
         var duration = Date.now() - visitStart;
         var durationText = formatDuration(duration);
         var pagesText = pageViews.length > 0 ? pageViews.join(' > ') : 'None';
@@ -250,48 +273,61 @@
                 'Last seen: ' + lastReadSender + ': ' + lastReadText;
         }
 
-        var msg = '---- Visit ----\n' +
-            'Duration: ' + durationText + '\n' +
-            'Pages: ' + pagesText + '\n' +
-            'Password: ' + (passwordPassed ? 'Yes' : 'No') +
-            '\n---- Device ----\n' +
-            'Device: ' + info.device + '\n' +
-            'Browser: ' + info.browser + '\n' +
-            'Screen: ' + info.screen +
-            '\n---- Location ----\n' +
-            'City: ' + (loc.city || '?') + ', ' + (loc.region || '') + '\n' +
-            'Country: ' + (loc.country || '?') + '\n' +
-            'IP: ' + (loc.ip || '?') +
-            readingInfo;
+        return {
+            duration: durationText,
+            msg: '---- Visit ----\n' +
+                'Duration: ' + durationText + '\n' +
+                'Pages: ' + pagesText + '\n' +
+                'Password: ' + (passwordPassed ? 'Yes' : 'No') +
+                '\n---- Device ----\n' +
+                'Device: ' + info.device + '\n' +
+                'Browser: ' + info.browser + '\n' +
+                'Screen: ' + info.screen +
+                '\n---- Location ----\n' +
+                'City: ' + (loc.city || '?') + ', ' + (loc.region || '') + '\n' +
+                'Country: ' + (loc.country || '?') + '\n' +
+                'IP: ' + (loc.ip || '?') +
+                readingInfo
+        };
+    }
 
-        // Use sendBeacon for reliability on page close
+    function onVisitEnd() {
+        if (exitSent) return;
+        exitSent = true;
+
+        var data = buildExitMsg();
         var payload = JSON.stringify({
             topic: NTFY_TOPIC,
-            title: 'Visitor left — ' + durationText,
-            message: msg,
+            title: 'Visitor left — ' + data.duration,
+            message: data.msg,
             tags: ['wave'],
             priority: 3
         });
 
-        if (navigator.sendBeacon) {
-            var blob = new Blob([payload], { type: 'application/json' });
-            navigator.sendBeacon(NTFY_URL, blob);
-        } else {
+        // Try BOTH methods for maximum reliability
+        try {
+            if (navigator.sendBeacon) {
+                var blob = new Blob([payload], { type: 'application/json' });
+                navigator.sendBeacon(NTFY_URL, blob);
+            }
+        } catch(e) {}
+
+        try {
             fetch(NTFY_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: payload,
                 keepalive: true
             }).catch(function() {});
-        }
+        } catch(e) {}
     }
 
     window.addEventListener('pagehide', onVisitEnd);
+    window.addEventListener('beforeunload', onVisitEnd);
     document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'hidden') {
             onVisitEnd();
         }
     });
-    window.addEventListener('beforeunload', onVisitEnd);
 
 })();
