@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="محادثتنا — هدية رومانسية تحفظ ذكرياتنا الجميلة">
+    <title>💕 محادثتنا — محمد و بطوط</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/welcome.css">
+    <link rel="stylesheet" href="css/chat.css">
+    <link rel="stylesheet" href="css/stats.css">
+    <link rel="stylesheet" href="css/timeline.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💕</text></svg>">
+</head>
+<body>
+    <!-- Floating Hearts Background -->
+    <div id="floating-hearts" class="floating-hearts-container"></div>
+
+    <!-- Stars Background -->
+    <div id="stars-bg" class="stars-background"></div>
+
+    <!-- Navigation Bar -->
+    <nav id="navbar" class="navbar hidden">
+        <div class="navbar-inner">
+            <div class="navbar-brand">💕 محادثتنا</div>
+            <div class="navbar-links">
+                <a href="#" data-page="chat" class="nav-link active" id="nav-chat">
+                    <span class="nav-icon">💬</span>
+                    <span class="nav-text">المحادثة</span>
+                </a>
+                <a href="#" data-page="stats" class="nav-link" id="nav-stats">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">الإحصائيات</span>
+                </a>
+                <a href="#" data-page="timeline" class="nav-link" id="nav-timeline">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">الخط الزمني</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Welcome Page -->
+    <section id="page-welcome" class="page welcome-page active">
+        <div class="welcome-content">
+            <div class="welcome-hearts-ring">
+                <span>💕</span><span>💗</span><span>💖</span><span>💕</span>
+                <span>💗</span><span>💖</span><span>💕</span><span>💗</span>
+            </div>
+            <h1 class="welcome-title">
+                <span class="title-line">محمد</span>
+                <span class="title-amp">&</span>
+                <span class="title-line">بطوط</span>
+            </h1>
+            <div class="welcome-divider">
+                <span class="divider-heart">💕</span>
+            </div>
+            <p class="welcome-subtitle">قصة حبنا في كلمات</p>
+            <p class="welcome-message">
+                كل رسالة كتبناها كانت نبضة من قلب يحب...<br>
+                هنا جمعت لكِ كل كلماتنا، كل ضحكاتنا، كل لحظاتنا 💕
+            </p>
+            <div class="welcome-stats-preview" id="welcome-stats-preview">
+                <!-- Filled by JS -->
+            </div>
+            <button class="welcome-btn" id="btn-start">
+                <span class="btn-text">ابدأ الرحلة</span>
+                <span class="btn-icon">✨</span>
+                <div class="btn-sparkle"></div>
+            </button>
+        </div>
+        <div class="welcome-scroll-hint">
+            <span>⬇</span>
+        </div>
+    </section>
+
+    <!-- Chat Page -->
+    <section id="page-chat" class="page chat-page">
+        <div class="chat-header">
+            <div class="search-container" id="search-container">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-input" class="search-input" placeholder="ابحث في المحادثة...">
+                    <span class="search-count" id="search-count"></span>
+                    <button class="search-clear" id="search-clear">✕</button>
+                </div>
+                <div class="search-nav" id="search-nav">
+                    <button class="search-nav-btn" id="search-prev">▲</button>
+                    <button class="search-nav-btn" id="search-next">▼</button>
+                </div>
+            </div>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="chat-loading" id="chat-loading">
+                <div class="loading-heart">💕</div>
+                <p>جاري تحميل الذكريات...</p>
+            </div>
+        </div>
+        <button class="scroll-to-bottom" id="scroll-bottom" title="انتقل للأسفل">⬇</button>
+        <button class="bookmark-btn" id="bookmark-btn" title="وقفنا هنا 📌">📌 وقفنا هنا</button>
+        <div class="bookmark-banner hidden" id="bookmark-banner">
+            <span>📌 يوجد نقطة توقف محفوظة</span>
+            <button class="bookmark-go" id="bookmark-go">انتقل إليها</button>
+            <button class="bookmark-dismiss" id="bookmark-dismiss">✕</button>
+        </div>
+        <div class="bookmark-toast hidden" id="bookmark-toast">✅ تم حفظ نقطة التوقف!</div>
+    </section>
+
+    <!-- Stats Page -->
+    <section id="page-stats" class="page stats-page">
+        <div class="stats-container" id="stats-container">
+            <h2 class="stats-title">📊 إحصائيات محادثتنا</h2>
+            <div class="stats-content" id="stats-content">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline Page -->
+    <section id="page-timeline" class="page timeline-page">
+        <div class="timeline-container" id="timeline-container">
+            <h2 class="timeline-title">📅 رحلتنا عبر الزمن</h2>
+            <div class="timeline-content" id="timeline-content">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </section>
+
+    <script src="js/chatParser.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

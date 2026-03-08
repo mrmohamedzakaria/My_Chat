@@ -1,0 +1,231 @@
+/* ===== Timeline Page ===== */
+.timeline-page {
+    flex-direction: column;
+    padding: 80px 20px 40px;
+    align-items: center;
+}
+
+.timeline-container {
+    max-width: 700px;
+    width: 100%;
+}
+
+.timeline-title {
+    font-family: var(--font-decorative);
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 40px;
+    background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.timeline-content {
+    position: relative;
+    padding-right: 40px;
+}
+
+/* Vertical Line */
+.timeline-content::before {
+    content: '';
+    position: absolute;
+    right: 16px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--primary-pink), var(--primary-purple), var(--primary-gold), var(--primary-pink));
+    background-size: 100% 400%;
+    animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 0%; }
+    50% { background-position: 0% 100%; }
+}
+
+/* Timeline Item */
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+    animation: fadeInUp 0.5s ease-out;
+    animation-fill-mode: both;
+}
+
+.timeline-dot {
+    position: absolute;
+    right: -40px;
+    top: 18px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+    border: 3px solid var(--bg-dark-1);
+    z-index: 2;
+    transition: var(--transition-fast);
+    box-shadow: 0 0 12px rgba(196, 77, 255, 0.3);
+}
+
+.timeline-item:hover .timeline-dot {
+    transform: scale(1.4);
+    box-shadow: 0 0 25px rgba(196, 77, 255, 0.6);
+}
+
+.timeline-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.timeline-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--primary-pink), var(--primary-purple));
+    opacity: 0;
+    transition: var(--transition-normal);
+}
+
+.timeline-card:hover {
+    transform: translateX(-5px);
+    background: var(--bg-card-hover);
+    box-shadow: var(--shadow-glow);
+}
+
+.timeline-card:hover::before {
+    opacity: 1;
+}
+
+.timeline-period {
+    font-family: var(--font-decorative);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.timeline-info {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.timeline-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.timeline-stat-icon {
+    font-size: 1rem;
+}
+
+.timeline-stat-value {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Mini Bar */
+.timeline-mini-bar {
+    margin-top: 12px;
+    display: flex;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.timeline-mini-fill-1 {
+    background: linear-gradient(90deg, var(--primary-pink), var(--accent-rose));
+    transition: width 1s ease;
+}
+
+.timeline-mini-fill-2 {
+    background: linear-gradient(90deg, var(--primary-purple), var(--accent-lavender));
+    transition: width 1s ease;
+}
+
+/* Year Label */
+.timeline-year-label {
+    text-align: center;
+    margin: 40px 0 20px;
+    position: relative;
+}
+
+.timeline-year-label span {
+    font-family: var(--font-decorative);
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-gold), #ffb347);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.timeline-year-label::before,
+.timeline-year-label::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    height: 1px;
+    width: 80px;
+    background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
+}
+
+.timeline-year-label::before {
+    right: calc(50% + 60px);
+}
+
+.timeline-year-label::after {
+    left: calc(50% + 60px);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .timeline-page {
+        padding: 75px 12px 30px;
+    }
+
+    .timeline-title {
+        font-size: 1.5rem;
+    }
+
+    .timeline-content {
+        padding-right: 30px;
+    }
+
+    .timeline-content::before {
+        right: 10px;
+    }
+
+    .timeline-dot {
+        right: -30px;
+        width: 12px;
+        height: 12px;
+    }
+
+    .timeline-card {
+        padding: 15px;
+    }
+
+    .timeline-info {
+        gap: 12px;
+    }
+}

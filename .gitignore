@@ -1,0 +1,14 @@
+# Chat data (private)
+chat.txt
+
+# Server script
+server.ps1
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Editor
+.vscode/
+*.swp
+*.swo
