@@ -72,11 +72,11 @@
     margin: 0 auto;
     display: flex;
     align-items: center;
-    justify-content: center;
-    flex-wrap: wrap; /* Allow wrapping on small screens */
-    gap: 10px;
-    overflow: visible;
+    justify-content: flex-end; /* Right side in RTL */
+    gap: 8px;
+    padding: 0 12px;
     width: 100%;
+    overflow: visible;
 }
 
 /* Bookmark Header Button */

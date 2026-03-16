@@ -8,12 +8,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css?v=12">
-    <link rel="stylesheet" href="css/welcome.css?v=12">
-    <link rel="stylesheet" href="css/chat.css?v=12">
-    <link rel="stylesheet" href="css/stats.css?v=12">
-    <link rel="stylesheet" href="css/timeline.css?v=12">
-    <link rel="stylesheet" href="css/extras.css?v=12">
+    <link rel="stylesheet" href="css/styles.css?v=13">
+    <link rel="stylesheet" href="css/welcome.css?v=13">
+    <link rel="stylesheet" href="css/chat.css?v=13">
+    <link rel="stylesheet" href="css/stats.css?v=13">
+    <link rel="stylesheet" href="css/timeline.css?v=13">
+    <link rel="stylesheet" href="css/extras.css?v=13">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💕</text></svg>">
 </head>
 <body>
@@ -123,11 +123,17 @@
 
     <!-- Chat Page -->
     <section id="page-chat" class="page chat-page">
-        <!-- Minimal Chat Header -->
+        <!-- Chat Header -->
         <div class="chat-header">
-            <div class="chat-header-inner" style="justify-content: flex-start; gap: 8px; padding: 0 10px;">
-                
-                <!-- Search Lens first so it's on the extreme right in RTL -->
+            <div class="chat-header-inner">
+                <!-- Bookmark pill (hidden by default, appears to the left of search icon) -->
+                <button class="bookmark-fab hidden" id="bookmark-go" title="تكمل منين ما وقفت؟">
+                    <span class="bookmark-fab-icon">📌</span>
+                    <span class="bookmark-fab-text">تكملة القراءة</span>
+                    <span class="bookmark-fab-close" id="bookmark-dismiss">×</span>
+                </button>
+
+                <!-- Search icon wrapper on the far right -->
                 <div class="goto-msg-wrapper" id="goto-msg-wrapper">
                     <button class="goto-search-toggle" id="goto-search-toggle" title="بحث برقم الرسالة">🔍</button>
                     <div class="goto-msg-expandable" id="goto-msg-expandable">
@@ -137,13 +143,6 @@
                     </div>
                 </div>
 
-                <!-- Bookmark button inline with the header, left of the lens -->
-                <button class="bookmark-fab hidden" id="bookmark-go" title="تكمل منين ما وقفت؟">
-                    <span class="bookmark-fab-icon">📌</span>
-                    <span class="bookmark-fab-text">تكملة القراءة</span>
-                    <span class="bookmark-fab-close" id="bookmark-dismiss">×</span>
-                </button>
-                
                 <span class="goto-msg-error hidden" id="goto-msg-error"></span>
             </div>
         </div>
@@ -216,8 +215,8 @@
         <div class="theme-dot" data-theme="rose" title="روز"></div>
     </div>
 
-    <script src="js/chatParser.js?v=12"></script>
-    <script src="js/app.js?v=12"></script>
-    <script src="js/tracker.js?v=12"></script>
+    <script src="js/chatParser.js?v=13"></script>
+    <script src="js/app.js?v=13"></script>
+    <script src="js/tracker.js?v=13"></script>
 </body>
 </html>
