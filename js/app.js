@@ -1064,10 +1064,9 @@
         const input = $('goto-msg-input');
         const btn = $('goto-msg-btn');
         const errorEl = $('goto-msg-error');
-        let isJumping = false;
 
         function goToMessage() {
-            if (!chatData || chatData.messages.length === 0 || isJumping) return;
+            if (!chatData || chatData.messages.length === 0) return;
 
             const val = parseInt(input.value);
             if (!val || val < 1) {
@@ -1082,63 +1081,105 @@
             }
 
             errorEl.classList.add('hidden');
-            isJumping = true;
-            btn.textContent = '⏳';
 
             // Make sure we're on chat page
             if (currentPage !== 'chat') {
                 navigateTo('chat');
             }
 
-            // If year filter is active, reset to 'all'
+            // Reset to 'all' filter
             if (activeYearFilter !== 'all') {
                 applyYearFilter('all');
-                const container = $('chat-messages');
-                container.innerHTML = '';
-                renderedCount = 0;
             }
 
             const container = $('chat-messages');
 
-            // Render in async chunks to avoid freezing the browser
-            function renderChunked() {
-                const alreadyRendered = container.querySelector(`[data-index="${msgIndex}"]`);
-                if (alreadyRendered) {
-                    finishJump(alreadyRendered);
-                    return;
+            // ===== RADICAL: Render only a small window around the target =====
+            const WINDOW = 50; // 50 messages before and after
+            const startIdx = Math.max(0, msgIndex - WINDOW);
+            const endIdx = Math.min(filteredMessages.length, msgIndex + WINDOW);
+
+            // Clear everything
+            container.innerHTML = '';
+
+            // Add "back to start" button
+            const backBtn = document.createElement('div');
+            backBtn.className = 'goto-back-btn';
+            backBtn.innerHTML = '⬆️ رجوع للبداية';
+            backBtn.addEventListener('click', () => {
+                container.innerHTML = '';
+                renderedCount = 0;
+                renderBatch();
+                container.scrollTop = 0;
+            });
+            container.appendChild(backBtn);
+
+            // Render only the window
+            const fragment = document.createDocumentFragment();
+            let lastDate = null;
+
+            for (let i = startIdx; i < endIdx; i++) {
+                const { msg, originalIndex } = filteredMessages[i];
+
+                // Date separator
+                if (msg.date !== lastDate) {
+                    const sep = document.createElement('div');
+                    sep.className = 'date-separator';
+                    sep.innerHTML = `<span class="date-separator-text">${formatDateArabic(msg.date)}</span>`;
+                    fragment.appendChild(sep);
+                    lastDate = msg.date;
                 }
 
-                if (renderedCount < filteredMessages.length) {
-                    // Render a few batches per frame
-                    for (let i = 0; i < 3 && renderedCount <= msgIndex + BATCH_SIZE && renderedCount < filteredMessages.length; i++) {
-                        renderBatch();
-                    }
-                    requestAnimationFrame(renderChunked);
+                // Message bubble
+                const bubble = document.createElement('div');
+                bubble.className = `message-bubble ${msg.isSystem ? 'system-msg' : msg.senderClass}`;
+                bubble.dataset.index = originalIndex;
+
+                if (msg.isSystem) {
+                    bubble.textContent = msg.text;
                 } else {
-                    showGoToError('الرسالة مش موجودة');
-                    isJumping = false;
-                    btn.textContent = '🚀';
+                    const isFav = favorites.includes(originalIndex);
+                    let badgeHtml = '';
+                    if (originalIndex === msgIndex) {
+                        badgeHtml = `<span class="msg-number-badge">#${originalIndex + 1}</span>`;
+                    }
+                    bubble.innerHTML = `
+                        ${badgeHtml}
+                        <button class="fav-btn ${isFav ? 'active' : ''}" data-fav-index="${originalIndex}" title="أضف للمفضلة">❤️</button>
+                        <span class="message-sender">${escapeHtml(msg.sender)}</span>
+                        <span class="message-text">${escapeHtml(msg.text)}</span>
+                        <span class="message-time">${msg.time}</span>
+                    `;
                 }
+
+                fragment.appendChild(bubble);
             }
 
-            function finishJump(bubble) {
-                // Add temporary number badge only on this message
-                const badge = document.createElement('span');
-                badge.className = 'msg-number-badge';
-                badge.textContent = '#' + (msgIndex + 1);
-                bubble.prepend(badge);
+            container.appendChild(fragment);
 
-                bubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                bubble.classList.add('goto-highlight');
-                setTimeout(() => {
-                    bubble.classList.remove('goto-highlight');
-                    badge.remove();
-                }, 3000);
-                isJumping = false;
-                btn.textContent = '🚀';
-            }
+            // Update renderedCount to allow normal scrolling to resume later
+            renderedCount = endIdx;
 
-            requestAnimationFrame(renderChunked);
+            // Attach favorite listeners
+            container.querySelectorAll('.fav-btn:not([data-bound])').forEach(b => {
+                b.dataset.bound = '1';
+                b.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const idx = parseInt(b.dataset.favIndex);
+                    toggleFavorite(idx, b);
+                });
+            });
+
+            // Scroll to the target bubble and highlight it
+            setTimeout(() => {
+                const targetBubble = container.querySelector(`[data-index="${msgIndex}"]`);
+                if (targetBubble) {
+                    targetBubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    targetBubble.classList.add('goto-highlight');
+                    setTimeout(() => targetBubble.classList.remove('goto-highlight'), 3000);
+                }
+            }, 50);
+
             input.value = '';
         }
 
@@ -1146,12 +1187,8 @@
             errorEl.textContent = msg;
             errorEl.classList.remove('hidden');
             input.classList.add('shake');
-            setTimeout(() => {
-                input.classList.remove('shake');
-            }, 400);
-            setTimeout(() => {
-                errorEl.classList.add('hidden');
-            }, 3000);
+            setTimeout(() => input.classList.remove('shake'), 400);
+            setTimeout(() => errorEl.classList.add('hidden'), 3000);
         }
 
         btn.addEventListener('click', goToMessage);
