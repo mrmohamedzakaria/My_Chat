@@ -75,12 +75,15 @@
 .timeline-card {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
-    border-radius: var(--radius-lg);
-    padding: 20px;
+    border-radius: var(--radius-xl);
+    padding: 24px;
     cursor: pointer;
     transition: var(--transition-normal);
     position: relative;
     overflow: hidden;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .timeline-card::before {

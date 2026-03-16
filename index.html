@@ -7,7 +7,7 @@
     <title>💕 محادثتنا — محمد و بطوط</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/welcome.css">
     <link rel="stylesheet" href="css/chat.css">
@@ -147,6 +147,14 @@
                     <span>📌 تكمل من حيث وقفت؟</span>
                     <button class="bookmark-go" id="bookmark-go">أيوه</button>
                     <button class="bookmark-dismiss" id="bookmark-dismiss">لا</button>
+                </div>
+                <div class="goto-msg-widget" id="goto-msg-widget">
+                    <div class="goto-msg-input-wrap">
+                        <span class="goto-msg-hash">#</span>
+                        <input type="number" id="goto-msg-input" class="goto-msg-input" placeholder="رقم الرسالة" min="1" autocomplete="off">
+                    </div>
+                    <button class="goto-msg-btn" id="goto-msg-btn" title="روح للرسالة">🚀</button>
+                    <span class="goto-msg-error hidden" id="goto-msg-error"></span>
                 </div>
             </div>
         </div>

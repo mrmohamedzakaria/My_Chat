@@ -50,6 +50,7 @@
         setupThemePicker();
         setupLockScreen();
         setupRandomMemory();
+        setupGoToMessage();
     }
 
     // ===== Lock Screen =====
@@ -512,6 +513,7 @@
             } else {
                 const isFav = favorites.includes(originalIndex);
                 bubble.innerHTML = `
+                    <span class="msg-number-badge">#${originalIndex + 1}</span>
                     <button class="fav-btn ${isFav ? 'active' : ''}" data-fav-index="${originalIndex}" title="أضف للمفضلة">❤️</button>
                     <span class="message-sender">${escapeHtml(msg.sender)}</span>
                     <span class="message-text">${escapeHtml(msg.text)}</span>
@@ -1057,6 +1059,79 @@
             }, 100);
         }
     };
+
+    // ===== Go To Message by # =====
+    function setupGoToMessage() {
+        const input = $('goto-msg-input');
+        const btn = $('goto-msg-btn');
+        const errorEl = $('goto-msg-error');
+
+        function goToMessage() {
+            if (!chatData || chatData.messages.length === 0) return;
+
+            const val = parseInt(input.value);
+            if (!val || val < 1) {
+                showGoToError('ادخل رقم رسالة صحيح');
+                return;
+            }
+
+            const msgIndex = val - 1; // user sees 1-based, code uses 0-based
+            if (msgIndex >= chatData.messages.length) {
+                showGoToError(`أقصى رقم هو ${chatData.messages.length}`);
+                return;
+            }
+
+            errorEl.classList.add('hidden');
+
+            // Make sure we're on chat page
+            if (currentPage !== 'chat') {
+                navigateTo('chat');
+            }
+
+            // Ensure messages are rendered up to the target index
+            // We need to find the filtered index for this originalIndex
+            applyYearFilter('all');
+            const container = $('chat-messages');
+            container.innerHTML = '';
+            renderedCount = 0;
+
+            // Render batches until the target message is rendered
+            while (renderedCount <= msgIndex + BATCH_SIZE && renderedCount < filteredMessages.length) {
+                renderBatch();
+            }
+
+            // Scroll and highlight
+            setTimeout(() => {
+                const bubble = container.querySelector(`[data-index="${msgIndex}"]`);
+                if (bubble) {
+                    bubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    bubble.classList.add('goto-highlight');
+                    setTimeout(() => bubble.classList.remove('goto-highlight'), 3000);
+                } else {
+                    showGoToError('الرسالة مش موجودة');
+                }
+            }, 150);
+
+            input.value = '';
+        }
+
+        function showGoToError(msg) {
+            errorEl.textContent = msg;
+            errorEl.classList.remove('hidden');
+            input.classList.add('shake');
+            setTimeout(() => {
+                input.classList.remove('shake');
+            }, 400);
+            setTimeout(() => {
+                errorEl.classList.add('hidden');
+            }, 3000);
+        }
+
+        btn.addEventListener('click', goToMessage);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') goToMessage();
+        });
+    }
 
     // ===== Utilities =====
     function escapeHtml(text) {

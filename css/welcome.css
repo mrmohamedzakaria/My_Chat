@@ -170,24 +170,25 @@
     position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 16px 50px;
+    gap: 12px;
+    padding: 16px 56px;
     border: none;
     border-radius: var(--radius-xl);
     background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
     color: white;
     font-family: var(--font-main);
-    font-size: 1.2rem;
-    font-weight: 700;
+    font-size: 1.25rem;
+    font-weight: 800;
     cursor: pointer;
     overflow: hidden;
     transition: var(--transition-normal);
+    box-shadow: 0 8px 25px rgba(255, 71, 133, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.2);
     animation: glow 3s ease-in-out infinite;
 }
 
 .welcome-btn:hover {
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 10px 40px rgba(255, 107, 157, 0.4);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(255, 71, 133, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3);
 }
 
 .welcome-btn:active {
