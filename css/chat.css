@@ -172,7 +172,7 @@
     white-space: nowrap;
 }
 
-/* Message Bubble - Premium Glassmorphism */
+/* Message Bubble - Smooth UI (Optimized for Mobile Performance) */
 .message-bubble {
     max-width: 78%;
     margin-bottom: 16px;
@@ -184,22 +184,20 @@
     overflow-wrap: break-word;
     line-height: 1.6;
     font-size: 1.05rem;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Lighter shadow to save GPU */
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .message-bubble.sender-1 {
-    background: linear-gradient(145deg, rgba(255, 71, 133, 0.18), rgba(244, 63, 94, 0.05));
-    border-left: 1px solid rgba(255, 71, 133, 0.3);
+    background: linear-gradient(145deg, rgba(255, 71, 133, 0.4), rgba(244, 63, 94, 0.2));
+    border-left: 2px solid var(--primary-pink);
     margin-left: auto;
     border-radius: var(--radius-lg) var(--radius-lg) 4px var(--radius-lg);
 }
 
 .message-bubble.sender-2 {
-    background: linear-gradient(145deg, rgba(168, 85, 247, 0.18), rgba(192, 132, 252, 0.05));
-    border-right: 1px solid rgba(168, 85, 247, 0.3);
+    background: linear-gradient(145deg, rgba(168, 85, 247, 0.4), rgba(192, 132, 252, 0.2));
+    border-right: 2px solid var(--primary-purple);
     margin-right: auto;
     border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) 4px;
 }
@@ -658,42 +656,37 @@
     transform: scale(1.05);
 }
 
-/* Floating Bookmark Action Button (Updated placement and style) */
+/* Inline Bookmark Action Button (Updated placement) */
 .bookmark-fab {
-    position: fixed;
-    top: 135px; /* Sits just below the chat header */
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 90;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    background: rgba(15, 15, 20, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    gap: 6px;
+    background: rgba(15, 15, 20, 0.95);
     color: var(--primary-gold);
-    border: 1px solid rgba(255, 215, 0, 0.4);
+    border: 1px solid rgba(255, 215, 0, 0.6);
     border-radius: 30px;
-    padding: 8px 22px;
+    padding: 0 14px;
+    height: 44px; /* Matches search icon height */
     font-family: var(--font-main);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 215, 0, 0.15);
-    animation: dropIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    animation: fadeInUp 0.4s ease-out;
     transition: var(--transition-normal);
     white-space: nowrap;
+    z-index: 2;
 }
 
 .bookmark-fab:hover {
-    transform: translateX(-50%) translateY(2px) scale(1.02);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.3);
+    transform: scale(1.03);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 215, 0, 0.2);
     background: rgba(25, 25, 30, 0.95);
     border-color: rgba(255, 215, 0, 0.7);
 }
 
 .bookmark-fab.hidden {
-    display: none;
+    display: none !important;
 }
 
 .bookmark-fab-icon {
@@ -715,9 +708,4 @@
 .bookmark-fab-close:hover {
     opacity: 1;
     color: var(--accent-rose);
-}
-
-@keyframes dropIn {
-    0% { transform: translate(-50%, -30px) scale(0.9); opacity: 0; }
-    100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
 }
