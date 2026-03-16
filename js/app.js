@@ -23,6 +23,7 @@
     let searchResults = [];
     let searchIndex = -1;
     let renderedCount = 0;
+    let isRenderingBatch = false;
     let filteredMessages = []; // messages after year filter
     let activeYearFilter = 'all';
     let favorites = JSON.parse(localStorage.getItem('chat_favorites') || '[]');
@@ -475,9 +476,14 @@
         
         // Infinite scroll
         container.addEventListener('scroll', () => {
+            if (isRenderingBatch) return;
             const { scrollTop, scrollHeight, clientHeight } = container;
-            if (scrollTop + clientHeight >= scrollHeight - 200) {
-                renderBatch();
+            if (scrollTop + clientHeight >= scrollHeight - 400) {
+                isRenderingBatch = true;
+                requestAnimationFrame(() => {
+                    renderBatch();
+                    setTimeout(() => isRenderingBatch = false, 100);
+                });
             }
         });
     }
@@ -809,10 +815,10 @@
 
         setTimeout(() => {
             const marker = document.querySelector('.bookmark-marker');
-            if (marker) marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (marker) marker.scrollIntoView({ behavior: 'auto', block: 'center' });
             else {
                 const bubble = document.querySelector(`[data-index="${msgIndex}"]`);
-                if (bubble) bubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (bubble) bubble.scrollIntoView({ behavior: 'auto', block: 'center' });
             }
         }, 50);
     }
@@ -1241,7 +1247,7 @@
             setTimeout(() => {
                 const targetBubble = container.querySelector(`[data-index="${msgIndex}"]`);
                 if (targetBubble) {
-                    targetBubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    targetBubble.scrollIntoView({ behavior: 'auto', block: 'center' });
                     targetBubble.classList.add('goto-highlight');
                     setTimeout(() => targetBubble.classList.remove('goto-highlight'), 3000);
                 }
