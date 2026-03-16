@@ -1065,9 +1065,10 @@
         const input = $('goto-msg-input');
         const btn = $('goto-msg-btn');
         const errorEl = $('goto-msg-error');
+        let isJumping = false;
 
         function goToMessage() {
-            if (!chatData || chatData.messages.length === 0) return;
+            if (!chatData || chatData.messages.length === 0 || isJumping) return;
 
             const val = parseInt(input.value);
             if (!val || val < 1) {
@@ -1075,43 +1076,61 @@
                 return;
             }
 
-            const msgIndex = val - 1; // user sees 1-based, code uses 0-based
+            const msgIndex = val - 1;
             if (msgIndex >= chatData.messages.length) {
                 showGoToError(`أقصى رقم هو ${chatData.messages.length}`);
                 return;
             }
 
             errorEl.classList.add('hidden');
+            isJumping = true;
+            btn.textContent = '⏳';
 
             // Make sure we're on chat page
             if (currentPage !== 'chat') {
                 navigateTo('chat');
             }
 
-            // Ensure messages are rendered up to the target index
-            // We need to find the filtered index for this originalIndex
-            applyYearFilter('all');
-            const container = $('chat-messages');
-            container.innerHTML = '';
-            renderedCount = 0;
-
-            // Render batches until the target message is rendered
-            while (renderedCount <= msgIndex + BATCH_SIZE && renderedCount < filteredMessages.length) {
-                renderBatch();
+            // If year filter is active, reset to 'all'
+            if (activeYearFilter !== 'all') {
+                applyYearFilter('all');
+                const container = $('chat-messages');
+                container.innerHTML = '';
+                renderedCount = 0;
             }
 
-            // Scroll and highlight
-            setTimeout(() => {
-                const bubble = container.querySelector(`[data-index="${msgIndex}"]`);
-                if (bubble) {
-                    bubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    bubble.classList.add('goto-highlight');
-                    setTimeout(() => bubble.classList.remove('goto-highlight'), 3000);
+            const container = $('chat-messages');
+
+            // Render in async chunks to avoid freezing the browser
+            function renderChunked() {
+                const alreadyRendered = container.querySelector(`[data-index="${msgIndex}"]`);
+                if (alreadyRendered) {
+                    finishJump(alreadyRendered);
+                    return;
+                }
+
+                if (renderedCount < filteredMessages.length) {
+                    // Render a few batches per frame
+                    for (let i = 0; i < 3 && renderedCount <= msgIndex + BATCH_SIZE && renderedCount < filteredMessages.length; i++) {
+                        renderBatch();
+                    }
+                    requestAnimationFrame(renderChunked);
                 } else {
                     showGoToError('الرسالة مش موجودة');
+                    isJumping = false;
+                    btn.textContent = '🚀';
                 }
-            }, 150);
+            }
 
+            function finishJump(bubble) {
+                bubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                bubble.classList.add('goto-highlight');
+                setTimeout(() => bubble.classList.remove('goto-highlight'), 3000);
+                isJumping = false;
+                btn.textContent = '🚀';
+            }
+
+            requestAnimationFrame(renderChunked);
             input.value = '';
         }
 
