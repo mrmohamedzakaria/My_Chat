@@ -706,18 +706,18 @@
         const container = $('chat-messages');
         if (!container || !filteredMessages || filteredMessages.length === 0) return;
 
-        const bubbles = container.querySelectorAll('.message-bubble');
-        if (bubbles.length === 0) return;
-
         let closestIndex = 0;
         const containerRect = container.getBoundingClientRect();
         const centerY = containerRect.top + containerRect.height / 2;
 
-        for (const bubble of bubbles) {
-            const rect = bubble.getBoundingClientRect();
-            if (rect.top <= centerY && rect.bottom >= centerY - 50) {
-                closestIndex = parseInt(bubble.dataset.index) || 0;
-            }
+        // Use elementFromPoint instead of querying ALL bubbles
+        let el = document.elementFromPoint(containerRect.left + containerRect.width / 2, centerY);
+        while (el && !el.classList.contains('message-bubble') && el !== container) {
+            el = el.parentElement;
+        }
+
+        if (el && el.classList.contains('message-bubble')) {
+            closestIndex = parseInt(el.dataset.index) || 0;
         }
 
         if (closestIndex > 0) {
@@ -736,10 +736,77 @@
         const saved = localStorage.getItem('chat_bookmark');
         if (saved === null || !chatData) return;
         const msgIndex = parseInt(saved);
-        while (renderedCount <= msgIndex + 10 && renderedCount < chatData.messages.length) {
+
+        const container = $('chat-messages');
+
+        // Render only a small window around the bookmark
+        const WINDOW = 50; 
+        const startIdx = Math.max(0, msgIndex - WINDOW);
+        const endIdx = Math.min(filteredMessages.length, msgIndex + WINDOW);
+
+        // Clear everything
+        container.innerHTML = '';
+
+        // Add "back to start" button
+        const backBtn = document.createElement('div');
+        backBtn.className = 'goto-back-btn';
+        backBtn.innerHTML = '⬆️ رجوع للبداية';
+        backBtn.addEventListener('click', () => {
+            container.innerHTML = '';
+            renderedCount = 0;
             renderBatch();
+            container.scrollTop = 0;
+        });
+        container.appendChild(backBtn);
+
+        // Render only the window
+        const fragment = document.createDocumentFragment();
+        let lastDate = null;
+
+        for (let i = startIdx; i < endIdx; i++) {
+            const { msg, originalIndex } = filteredMessages[i];
+
+            if (msg.date !== lastDate) {
+                const sep = document.createElement('div');
+                sep.className = 'date-separator';
+                sep.innerHTML = `<span class="date-separator-text">${formatDateArabic(msg.date)}</span>`;
+                fragment.appendChild(sep);
+                lastDate = msg.date;
+            }
+
+            const bubble = document.createElement('div');
+            bubble.className = `message-bubble ${msg.isSystem ? 'system-msg' : msg.senderClass}`;
+            bubble.dataset.index = originalIndex;
+
+            if (msg.isSystem) {
+                bubble.textContent = msg.text;
+            } else {
+                const isFav = favorites.includes(originalIndex);
+                bubble.innerHTML = `
+                    <button class="fav-btn ${isFav ? 'active' : ''}" data-fav-index="${originalIndex}" title="أضف للمفضلة">❤️</button>
+                    <span class="message-sender">${escapeHtml(msg.sender)}</span>
+                    <span class="message-text">${escapeHtml(msg.text)}</span>
+                    <span class="message-time">${msg.time}</span>
+                `;
+            }
+            fragment.appendChild(bubble);
         }
+
+        container.appendChild(fragment);
+        renderedCount = endIdx;
+
+        // Attach favorite listeners
+        container.querySelectorAll('.fav-btn:not([data-bound])').forEach(b => {
+            b.dataset.bound = '1';
+            b.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(b.dataset.favIndex);
+                toggleFavorite(idx, b);
+            });
+        });
+
         insertBookmarkMarker(msgIndex);
+
         setTimeout(() => {
             const marker = document.querySelector('.bookmark-marker');
             if (marker) marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -747,7 +814,7 @@
                 const bubble = document.querySelector(`[data-index="${msgIndex}"]`);
                 if (bubble) bubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-        }, 100);
+        }, 50);
     }
 
     function insertBookmarkMarker(msgIndex) {
