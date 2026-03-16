@@ -38,8 +38,7 @@
         chat: $('page-chat'),
         favorites: $('page-favorites'),
         stats: $('page-stats'),
-        onthisday: $('page-onthisday'),
-        timeline: $('page-timeline')
+        onthisday: $('page-onthisday')
     };
 
     // ===== Initialization =====
@@ -207,13 +206,12 @@
             renderFavorites();
         }
         if (pageName === 'stats' && chatData) {
+            renderWelcomeStats(); 
             renderStats();
+            setupRandomMemory(); // Re-attach listener since it's on this page now
         }
         if (pageName === 'onthisday' && chatData) {
             renderOnThisDay();
-        }
-        if (pageName === 'timeline' && chatData) {
-            renderTimeline();
         }
 
         // Scroll to top
@@ -259,9 +257,6 @@
             }
 
             stats = ChatParser.calculateStats(chatData.messages, chatData.senders);
-
-            // Update welcome stats preview
-            renderWelcomePreview();
 
         } catch (e) {
             console.error('Error loading chat:', e);
@@ -734,7 +729,7 @@
     function checkForBookmark() {
         const saved = localStorage.getItem('chat_bookmark');
         if (saved !== null && parseInt(saved) > 0 && chatData) {
-            $('bookmark-banner').classList.remove('hidden');
+            $('bookmark-go').classList.remove('hidden');
         }
     }
 
@@ -1134,9 +1129,27 @@
 
     // ===== Go To Message by # =====
     function setupGoToMessage() {
+        const widgetWrapper = $('goto-msg-wrapper');
+        const toggleBtn = $('goto-search-toggle');
         const input = $('goto-msg-input');
         const btn = $('goto-msg-btn');
         const errorEl = $('goto-msg-error');
+
+        // Toggle Expandable Search
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent document click from firing immediately
+            widgetWrapper.classList.toggle('expanded');
+            if (widgetWrapper.classList.contains('expanded')) {
+                input.focus();
+            }
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+            if (widgetWrapper.classList.contains('expanded') && !widgetWrapper.contains(e.target)) {
+                widgetWrapper.classList.remove('expanded');
+            }
+        });
 
         function goToMessage() {
             if (!chatData || chatData.messages.length === 0) return;

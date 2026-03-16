@@ -8,12 +8,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css?v=8">
-    <link rel="stylesheet" href="css/welcome.css?v=8">
-    <link rel="stylesheet" href="css/chat.css?v=8">
-    <link rel="stylesheet" href="css/stats.css?v=8">
-    <link rel="stylesheet" href="css/timeline.css?v=8">
-    <link rel="stylesheet" href="css/extras.css?v=8">
+    <link rel="stylesheet" href="css/styles.css?v=9">
+    <link rel="stylesheet" href="css/welcome.css?v=9">
+    <link rel="stylesheet" href="css/chat.css?v=9">
+    <link rel="stylesheet" href="css/stats.css?v=9">
+    <link rel="stylesheet" href="css/timeline.css?v=9">
+    <link rel="stylesheet" href="css/extras.css?v=9">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💕</text></svg>">
 </head>
 <body>
@@ -22,12 +22,11 @@
         <div class="lock-content">
             <div class="lock-icon">🔒</div>
             <div class="lock-title">محادثتنا</div>
-            <div class="lock-subtitle">ادخلي الرقم السري عشان تشوفي الذكريات</div>
             <div class="lock-input-wrapper">
                 <input type="password" id="lock-input" class="lock-input" placeholder="••••" maxlength="10" autocomplete="off">
             </div>
-            <button class="lock-btn" id="lock-btn">ادخلي 💕</button>
-            <div class="lock-error hidden" id="lock-error">الرقم غلط، حاولي تاني 💔</div>
+            <button class="lock-btn" id="lock-btn">دخول</button>
+            <div class="lock-error hidden" id="lock-error">الرقم غلط 💔</div>
         </div>
     </div>
 
@@ -69,10 +68,6 @@
                     <span class="nav-icon">🗓️</span>
                     <span class="nav-text">ذكريات</span>
                 </a>
-                <a href="#" data-page="timeline" class="nav-link" id="nav-timeline">
-                    <span class="nav-icon">📅</span>
-                    <span class="nav-text">الزمني</span>
-                </a>
             </div>
         </div>
     </nav>
@@ -113,21 +108,8 @@
             </div>
             <p class="welcome-subtitle">قصة حبنا في كلمات</p>
             <p class="welcome-message">
-                كل رسالة كتبناها كانت نبضة من قلب يحب...<br>
                 هنا جمعت لكِ كل كلماتنا، كل ضحكاتنا، كل لحظاتنا 💕
             </p>
-            <div class="welcome-stats-preview" id="welcome-stats-preview">
-                <!-- Filled by JS -->
-            </div>
-            <div class="love-counter" id="love-counter">
-                <!-- Filled by JS: "معاً منذ X سنة و Y شهر و Z يوم" -->
-            </div>
-            <div class="first-message-box" id="first-message-box">
-                <!-- Filled by JS: first ever message -->
-            </div>
-            <button class="random-memory-btn" id="btn-random-memory">
-                🎲 ذكرى عشوائية
-            </button>
             <button class="welcome-btn" id="btn-start">
                 <span class="btn-text">ابدأ الرحلة</span>
                 <span class="btn-icon">✨</span>
@@ -141,21 +123,26 @@
 
     <!-- Chat Page -->
     <section id="page-chat" class="page chat-page">
+        
+        <!-- Floating Bookmark Button (Hidden by default) -->
+        <button class="bookmark-fab hidden" id="bookmark-go" title="تكمل منين ما وقفت؟">
+            <span class="bookmark-fab-icon">📌</span>
+            <span class="bookmark-fab-text">تكملة القراءة</span>
+            <span class="bookmark-fab-close" id="bookmark-dismiss">×</span>
+        </button>
+
+        <!-- Minimal Chat Header -->
         <div class="chat-header">
-            <div class="chat-header-inner">
-                <div class="bookmark-banner hidden" id="bookmark-banner">
-                    <span>📌 تكمل من حيث وقفت؟</span>
-                    <button class="bookmark-go" id="bookmark-go">أيوه</button>
-                    <button class="bookmark-dismiss" id="bookmark-dismiss">لا</button>
-                </div>
-                <div class="goto-msg-widget" id="goto-msg-widget">
-                    <div class="goto-msg-input-wrap">
+            <div class="chat-header-inner" style="justify-content: flex-end; padding: 0 15px;">
+                <div class="goto-msg-wrapper" id="goto-msg-wrapper">
+                    <button class="goto-search-toggle" id="goto-search-toggle" title="بحث برقم الرسالة">🔍</button>
+                    <div class="goto-msg-expandable" id="goto-msg-expandable">
                         <span class="goto-msg-hash">#</span>
                         <input type="number" id="goto-msg-input" class="goto-msg-input" placeholder="رقم الرسالة" min="1" autocomplete="off">
+                        <button class="goto-msg-btn" id="goto-msg-btn">🚀</button>
                     </div>
-                    <button class="goto-msg-btn" id="goto-msg-btn" title="روح للرسالة">🚀</button>
-                    <span class="goto-msg-error hidden" id="goto-msg-error"></span>
                 </div>
+                <span class="goto-msg-error hidden" id="goto-msg-error"></span>
             </div>
         </div>
         <div class="chat-messages" id="chat-messages">
@@ -180,6 +167,19 @@
     <section id="page-stats" class="page stats-page">
         <div class="stats-container" id="stats-container">
             <h2 class="stats-title">📊 إحصائيات محادثتنا</h2>
+            
+            <div class="love-counter" id="love-counter">
+                <!-- Filled by JS: "معاً منذ X سنة و Y شهر و Z يوم" -->
+            </div>
+            
+            <div class="first-message-box" id="first-message-box">
+                <!-- Filled by JS: first ever message -->
+            </div>
+
+            <button class="random-memory-btn" id="btn-random-memory" style="margin: 20px auto; display: flex;">
+                🎲 ذكرى عشوائية
+            </button>
+
             <div class="stats-content" id="stats-content">
                 <!-- Filled by JS -->
             </div>
@@ -214,8 +214,8 @@
         <div class="theme-dot" data-theme="rose" title="روز"></div>
     </div>
 
-    <script src="js/chatParser.js?v=8"></script>
-    <script src="js/app.js?v=8"></script>
-    <script src="js/tracker.js?v=8"></script>
+    <script src="js/chatParser.js?v=9"></script>
+    <script src="js/app.js?v=9"></script>
+    <script src="js/tracker.js?v=9"></script>
 </body>
 </html>

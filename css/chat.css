@@ -245,7 +245,7 @@
     color: var(--text-muted);
     font-size: 0.82rem;
     padding: 6px 18px;
-    border-radius: var(--radius-xl);
+    border-radius: var(--radius-lg);
 }
 
 /* Search highlight */
@@ -424,39 +424,75 @@
     font-weight: 600;
 }
 
-/* ===== Go To Message Widget ===== */
-.goto-msg-widget {
+/* ===== Go To Search Widget (Collapsible) ===== */
+.goto-msg-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.goto-search-toggle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    flex: 1 1 auto;
-    min-width: 150px;
+    transition: var(--transition-fast);
+    z-index: 2;
 }
 
-.goto-msg-input-wrap {
+.goto-search-toggle:hover {
+    background: rgba(196, 77, 255, 0.15);
+    border-color: rgba(196, 77, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.goto-msg-expandable {
+    position: absolute;
+    right: 0;
     display: flex;
     align-items: center;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
+    gap: 6px;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--primary-purple);
     border-radius: var(--radius-xl);
-    padding: 0 10px;
-    transition: var(--transition-fast);
-    overflow: hidden;
+    padding: 4px;
+    width: 200px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(20px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(196, 77, 255, 0.2);
 }
 
-.goto-msg-input-wrap:focus-within {
-    border-color: var(--primary-purple);
-    box-shadow: 0 0 15px rgba(196, 77, 255, 0.2);
+.goto-msg-wrapper.expanded .goto-search-toggle {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.5);
+}
+
+.goto-msg-wrapper.expanded .goto-msg-expandable {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0) scale(1);
 }
 
 .goto-msg-hash {
     color: var(--primary-pink);
     font-size: 1rem;
     font-weight: 800;
+    margin-right: 10px;
     pointer-events: none;
-    -webkit-user-select: none;
     user-select: none;
 }
 
@@ -466,10 +502,11 @@
     outline: none;
     color: var(--text-primary);
     font-family: var(--font-main);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 500;
     width: 90px;
-    padding: 7px 4px;
+    padding: 4px;
+    flex: 1;
     -moz-appearance: textfield;
     appearance: textfield;
 }
@@ -482,32 +519,28 @@
 
 .goto-msg-input::placeholder {
     color: var(--text-muted);
-    font-size: 0.78rem;
+    font-size: 0.8rem;
 }
 
 .goto-msg-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
-    border: 1px solid var(--glass-border);
+    border: none;
     background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
     color: white;
-    font-size: 1rem;
+    font-size: 0.9rem;
     cursor: pointer;
     transition: var(--transition-fast);
     flex-shrink: 0;
 }
 
 .goto-msg-btn:hover {
-    transform: scale(1.12);
-    box-shadow: 0 3px 18px rgba(196, 77, 255, 0.4);
-}
-
-.goto-msg-btn:active {
-    transform: scale(0.95);
+    transform: scale(1.1);
+    box-shadow: 0 2px 10px rgba(196, 77, 255, 0.4);
 }
 
 .goto-msg-error {
@@ -516,6 +549,10 @@
     font-weight: 500;
     white-space: nowrap;
     animation: fadeInUp 0.25s ease-out;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 5px;
 }
 
 .goto-msg-error.hidden {
@@ -615,4 +652,59 @@
 .goto-back-btn:hover {
     background: rgba(255, 215, 0, 0.2);
     transform: scale(1.05);
+}
+
+/* Floating Bookmark Action Button */
+.bookmark-fab {
+    position: fixed;
+    bottom: 30px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, var(--primary-gold), #ffbf00);
+    color: #000;
+    border: none;
+    border-radius: var(--radius-xl);
+    padding: 12px 20px;
+    font-family: var(--font-main);
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+    animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: var(--transition-fast);
+}
+
+.bookmark-fab:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(255, 215, 0, 0.6);
+}
+
+.bookmark-fab.hidden {
+    display: none;
+}
+
+.bookmark-fab-icon {
+    font-size: 1.1rem;
+}
+
+.bookmark-fab-close {
+    margin-right: 5px;
+    font-size: 1.2rem;
+    line-height: 1;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    font-weight: normal;
+}
+
+.bookmark-fab-close:hover {
+    opacity: 1;
+}
+
+@keyframes bounceIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    80% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
 }

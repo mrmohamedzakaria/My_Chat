@@ -129,42 +129,6 @@
     padding: 0 20px;
 }
 
-/* Stats Preview */
-.welcome-stats-preview {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin-bottom: 40px;
-    flex-wrap: wrap;
-}
-
-.stat-preview-item {
-    text-align: center;
-    animation: fadeInUp 1s ease-out;
-    animation-fill-mode: both;
-}
-
-.stat-preview-item:nth-child(1) { animation-delay: 0.3s; }
-.stat-preview-item:nth-child(2) { animation-delay: 0.5s; }
-.stat-preview-item:nth-child(3) { animation-delay: 0.7s; }
-
-.stat-preview-number {
-    font-size: 2.2rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--primary-pink), var(--primary-purple));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    display: block;
-    line-height: 1;
-}
-
-.stat-preview-label {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-top: 5px;
-}
-
 /* Start Button */
 .welcome-btn {
     position: relative;
@@ -237,14 +201,6 @@
     .welcome-message {
         font-size: 1rem;
         padding: 0;
-    }
-
-    .welcome-stats-preview {
-        gap: 20px;
-    }
-
-    .stat-preview-number {
-        font-size: 1.6rem;
     }
 
     .welcome-btn {
