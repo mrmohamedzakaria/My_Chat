@@ -8,15 +8,16 @@
 /* Chat Header */
 .chat-header {
     position: fixed;
-    top: 55px;
+    top: 62px; /* Increased slightly to prevent navbar overlap */
     left: 0;
     right: 0;
     z-index: 50;
     padding: 12px 20px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    background: rgba(13, 13, 26, 0.85);
-    border-bottom: 1px solid var(--glass-border);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    background: rgba(10, 10, 15, 0.75);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     overflow: visible;
 }
 
@@ -171,36 +172,36 @@
     white-space: nowrap;
 }
 
-/* Message Bubble */
+/* Message Bubble - Premium Glassmorphism */
 .message-bubble {
-    max-width: 75%;
-    margin-bottom: 12px;
-    padding: 12px 18px;
+    max-width: 78%;
+    margin-bottom: 16px;
+    padding: 14px 20px;
     position: relative;
-    animation: fadeInUp 0.3s ease-out;
+    animation: fadeInUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     animation-fill-mode: both;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    line-height: 1.75;
-    font-size: 1rem;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    line-height: 1.6;
+    font-size: 1.05rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .message-bubble.sender-1 {
-    background: var(--sender-1-bg);
-    border: 1px solid var(--sender-1-border);
+    background: linear-gradient(145deg, rgba(255, 71, 133, 0.18), rgba(244, 63, 94, 0.05));
+    border-left: 1px solid rgba(255, 71, 133, 0.3);
     margin-left: auto;
     border-radius: var(--radius-lg) var(--radius-lg) 4px var(--radius-lg);
-    box-shadow: 0 4px 15px rgba(255, 71, 133, 0.08);
 }
 
 .message-bubble.sender-2 {
-    background: var(--sender-2-bg);
-    border: 1px solid var(--sender-2-border);
+    background: linear-gradient(145deg, rgba(168, 85, 247, 0.18), rgba(192, 132, 252, 0.05));
+    border-right: 1px solid rgba(168, 85, 247, 0.3);
     margin-right: auto;
     border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) 4px;
-    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.08);
 }
 
 .message-sender {
@@ -436,16 +437,19 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
-    font-size: 1.2rem;
+    font-size: 1.25rem;
+    line-height: 1; /* Fix vertical alignment for emoji */
+    padding: 0;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: var(--transition-fast);
+    transition: var(--transition-normal);
     z-index: 2;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .goto-search-toggle:hover {
@@ -654,32 +658,38 @@
     transform: scale(1.05);
 }
 
-/* Floating Bookmark Action Button */
+/* Floating Bookmark Action Button (Updated placement and style) */
 .bookmark-fab {
     position: fixed;
-    bottom: 30px;
-    right: 20px;
-    z-index: 100;
-    display: flex;
+    top: 135px; /* Sits just below the chat header */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 90;
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    background: linear-gradient(135deg, var(--primary-gold), #ffbf00);
-    color: #000;
-    border: none;
-    border-radius: var(--radius-xl);
-    padding: 12px 20px;
+    gap: 8px;
+    background: rgba(15, 15, 20, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: var(--primary-gold);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    border-radius: 30px;
+    padding: 8px 22px;
     font-family: var(--font-main);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
-    animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transition: var(--transition-fast);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 215, 0, 0.15);
+    animation: dropIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: var(--transition-normal);
+    white-space: nowrap;
 }
 
 .bookmark-fab:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 30px rgba(255, 215, 0, 0.6);
+    transform: translateX(-50%) translateY(2px) scale(1.02);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.3);
+    background: rgba(25, 25, 30, 0.95);
+    border-color: rgba(255, 215, 0, 0.7);
 }
 
 .bookmark-fab.hidden {
@@ -687,24 +697,27 @@
 }
 
 .bookmark-fab-icon {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
+    animation: pulse 2s infinite;
 }
 
 .bookmark-fab-close {
-    margin-right: 5px;
-    font-size: 1.2rem;
+    margin-right: 6px;
+    font-size: 1.3rem;
     line-height: 1;
-    opacity: 0.6;
+    opacity: 0.5;
     transition: opacity 0.2s;
-    font-weight: normal;
+    font-weight: 400;
+    padding-left: 4px;
+    border-right: 1px solid rgba(255, 215, 0, 0.2);
 }
 
 .bookmark-fab-close:hover {
     opacity: 1;
+    color: var(--accent-rose);
 }
 
-@keyframes bounceIn {
-    0% { transform: scale(0.5); opacity: 0; }
-    80% { transform: scale(1.05); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
+@keyframes dropIn {
+    0% { transform: translate(-50%, -30px) scale(0.9); opacity: 0; }
+    100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
 }
