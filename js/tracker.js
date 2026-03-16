@@ -116,42 +116,47 @@
     function trackReadingProgress() {
         setInterval(function() {
             try {
+                // Skip if chat page is not visible
+                var chatPage = document.getElementById('page-chat');
+                if (!chatPage || !chatPage.classList.contains('active')) return;
+
                 var container = document.getElementById('chat-messages');
                 if (!container) return;
-
-                var bubbles = container.querySelectorAll('.message-bubble');
-                if (bubbles.length === 0) return;
 
                 var containerRect = container.getBoundingClientRect();
                 var centerY = containerRect.top + containerRect.height / 2;
 
-                for (var i = 0; i < bubbles.length; i++) {
-                    var rect = bubbles[i].getBoundingClientRect();
-                    if (rect.top <= centerY && rect.bottom >= centerY - 50) {
-                        var idx = parseInt(bubbles[i].dataset.index) || 0;
-                        if (idx > lastReadMsgIndex) {
-                            lastReadMsgIndex = idx;
+                // Use elementFromPoint instead of querying ALL bubbles
+                var el = document.elementFromPoint(containerRect.left + containerRect.width / 2, centerY);
+                while (el && !el.classList.contains('message-bubble') && el !== container) {
+                    el = el.parentElement;
+                }
 
-                            // Get message date from the date separator above
-                            var dateSep = bubbles[i].previousElementSibling;
-                            while (dateSep && !dateSep.classList.contains('date-separator')) {
-                                dateSep = dateSep.previousElementSibling;
-                            }
-                            if (dateSep) {
-                                var dateText = dateSep.querySelector('.date-separator-text');
+                if (el && el.classList.contains('message-bubble')) {
+                    var idx = parseInt(el.dataset.index) || 0;
+                    if (idx > lastReadMsgIndex) {
+                        lastReadMsgIndex = idx;
+
+                        var senderEl = el.querySelector('.message-sender');
+                        var textEl = el.querySelector('.message-text');
+                        if (senderEl) lastReadSender = senderEl.textContent;
+                        if (textEl) lastReadText = textEl.textContent.substring(0, 50);
+
+                        // Get date from nearby separator
+                        var prev = el.previousElementSibling;
+                        var maxLook = 5;
+                        while (prev && maxLook-- > 0) {
+                            if (prev.classList.contains('date-separator')) {
+                                var dateText = prev.querySelector('.date-separator-text');
                                 if (dateText) lastReadDate = dateText.textContent;
+                                break;
                             }
-
-                            // Get sender and text
-                            var senderEl = bubbles[i].querySelector('.message-sender');
-                            var textEl = bubbles[i].querySelector('.message-text');
-                            if (senderEl) lastReadSender = senderEl.textContent;
-                            if (textEl) lastReadText = textEl.textContent.substring(0, 50);
+                            prev = prev.previousElementSibling;
                         }
                     }
                 }
             } catch (e) {}
-        }, 3000); // Check every 3 seconds
+        }, 10000); // Check every 10 seconds instead of 3
     }
 
     // === TRACK PASSWORD ===
