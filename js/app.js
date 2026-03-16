@@ -513,7 +513,6 @@
             } else {
                 const isFav = favorites.includes(originalIndex);
                 bubble.innerHTML = `
-                    <span class="msg-number-badge">#${originalIndex + 1}</span>
                     <button class="fav-btn ${isFav ? 'active' : ''}" data-fav-index="${originalIndex}" title="أضف للمفضلة">❤️</button>
                     <span class="message-sender">${escapeHtml(msg.sender)}</span>
                     <span class="message-text">${escapeHtml(msg.text)}</span>
@@ -1123,9 +1122,18 @@
             }
 
             function finishJump(bubble) {
+                // Add temporary number badge only on this message
+                const badge = document.createElement('span');
+                badge.className = 'msg-number-badge';
+                badge.textContent = '#' + (msgIndex + 1);
+                bubble.prepend(badge);
+
                 bubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 bubble.classList.add('goto-highlight');
-                setTimeout(() => bubble.classList.remove('goto-highlight'), 3000);
+                setTimeout(() => {
+                    bubble.classList.remove('goto-highlight');
+                    badge.remove();
+                }, 3000);
                 isJumping = false;
                 btn.textContent = '🚀';
             }
