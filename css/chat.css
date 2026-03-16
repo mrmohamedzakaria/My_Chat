@@ -72,8 +72,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+    gap: 10px;
     overflow: visible;
+    width: 100%;
 }
 
 /* Bookmark Header Button */
@@ -426,8 +428,11 @@
 .goto-msg-widget {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     flex-wrap: wrap;
+    flex: 1 1 auto;
+    min-width: 150px;
 }
 
 .goto-msg-input-wrap {
@@ -565,18 +570,24 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+    .chat-header-inner {
+        flex-direction: column;
+        gap: 8px;
+    }
+
     .goto-msg-widget {
         gap: 4px;
+        width: 100%;
     }
 
     .goto-msg-input {
-        width: 70px;
+        width: 80px;
         font-size: 0.8rem;
     }
 
     .goto-msg-btn {
-        width: 32px;
-        height: 32px;
+        width: 34px;
+        height: 34px;
         font-size: 0.85rem;
     }
 }
